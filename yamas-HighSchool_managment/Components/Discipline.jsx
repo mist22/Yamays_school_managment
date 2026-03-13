@@ -7,11 +7,56 @@ import {
   ChevronRight,
   Printer,
   Trash2,
+  X,
 } from 'lucide-react';
 
-const Discipline = ({selectedStudent , filteredStds}) => {
+const Discipline = ({students, setStudents}) => {
+
+    const [selectedStudent, setSelectedStudent] = useState(null);
     const [searchTerm, setSearchTerm] = useState("")
+       const filteredStudents = students.filter(s => 
+    s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    const [isLogDisciplineModalOpen, setIsLogDisciplineModalOpen] = useState(false);
+      const [disciplineForm, setDisciplineForm] = useState({ 
+        studentId: '', 
+        reason: '', 
+        severity: 'Low', 
+        action: '', 
+        date: new Date().toISOString().split('T')[0] 
+      });
+
+  const handleLogDiscipline = (e) => {
+    e.preventDefault();
+    const targetId = disciplineForm.studentId || selectedStudent?.id;
+    if (!targetId) return;
+
+    setStudents(prev => prev.map(s => {
+      if (s.id === targetId) {
+        return {
+          ...s,
+          discipline: [...(s.discipline || []), { 
+            ...disciplineForm, 
+            id: `D${Date.now()}` 
+          }]
+        };
+      }
+      return s;
+    }));
+
+
+    setIsLogDisciplineModalOpen(false);
+    setDisciplineForm({ studentId: '', reason: '', severity: 'Low', action: '', date: new Date().toISOString().split('T')[0] });
+  };
   
+    const deleteDiscipline = (studentId, discId) => {
+    setStudents(prev => prev.map(s => {
+      if (s.id === studentId) {
+        return { ...s, discipline: s.discipline.filter(d => d.id !== discId) };
+      }
+      return s;
+    }));
+  };
+
   return (
       
     <div className="space-y-6">
@@ -22,9 +67,9 @@ const Discipline = ({selectedStudent , filteredStds}) => {
         </div>
         <button 
           onClick={() => setIsLogDisciplineModalOpen(true)}
-          className="w-full md:w-auto bg-rose-600 text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-rose-700 transition shadow-lg shadow-rose-100"
+          className="w-full md:w-50 bg-rose-600 text-white px-6 py-3 text-[15px]  rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-rose-700 transition shadow-lg shadow-rose-100"
         >
-          <Gavel size={20} /> Log New Incident
+          <Gavel size={20} />New Incident
         </button>
       </div>
 
@@ -43,7 +88,7 @@ const Discipline = ({selectedStudent , filteredStds}) => {
             </div>
           </div>
           <div className="flex-1 overflow-y-auto">
-            {filteredStds?.map(s => (
+            {filteredStudents?.map(s => (
               <div 
                 key={s.id} 
                 onClick={() => setSelectedStudent(s)}
@@ -127,6 +172,57 @@ const Discipline = ({selectedStudent , filteredStds}) => {
           )}
         </div>
       </div>
+
+
+            {/* Log Discipline Modal */}
+      {isLogDisciplineModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setIsLogDisciplineModalOpen(false)} />
+          <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-md overflow-hidden relative animate-in zoom-in-95 duration-200">
+            <div className="bg-rose-600 p-6 text-white flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-black uppercase tracking-tighter">Incident Log</h2>
+                <p className="text-rose-100 text-[10px] font-bold opacity-80 uppercase tracking-widest">Administrative Record</p>
+              </div>
+              <button onClick={() => setIsLogDisciplineModalOpen(false)} className="hover:bg-white/20 p-2 rounded-xl transition"><X size={20} /></button>
+            </div>
+            <form onSubmit={handleLogDiscipline} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              {!selectedStudent && (
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Select Student</label>
+                  <select required className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.studentId} onChange={e => setDisciplineForm({...disciplineForm, studentId: e.target.value})}>
+                    <option value="">Choose from directory...</option>
+                    {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+              )}
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Reason</label>
+                <textarea required className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 h-24 text-sm" placeholder="Provide incident details..." value={disciplineForm.reason} onChange={e => setDisciplineForm({...disciplineForm, reason: e.target.value})} />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Severity</label>
+                  <select className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.severity} onChange={e => setDisciplineForm({...disciplineForm, severity: e.target.value})}>
+                    <option>Low</option><option>Medium</option><option>High</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Date</label>
+                  <input type="date" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.date} onChange={e => setDisciplineForm({...disciplineForm, date: e.target.value})} />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Action Taken</label>
+                <input required type="text" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 text-sm" placeholder="e.g. Detention" value={disciplineForm.action} onChange={e => setDisciplineForm({...disciplineForm, action: e.target.value})} />
+              </div>
+              <button type="submit" className="w-full py-3.5 bg-rose-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-rose-700 transition shadow-lg active:scale-95">
+                Save Record
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

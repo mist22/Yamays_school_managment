@@ -1,7 +1,7 @@
 import { Gavel, Search } from 'lucide-react';
 import React, { useState } from 'react'
 
-const RegisterStudent = ({filteredStds}) => {
+const RegisterStudent = ({filteredStds , setSelectedStudent, setView}) => {
     const [searchTerm, setSearchTerm] = useState("")
   return (
      <div className="space-y-6">

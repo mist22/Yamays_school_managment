@@ -19,12 +19,16 @@ import {
   Trash2,
   Filter,
   UserPlus,
+  Moon,
+  Sun,
   Menu,
   ChevronRight,
 } from 'lucide-react';
 import Dashbaord from './Dashbaord';
 import Discipline from './Discipline';
 import RegisterStudent from './RegisterStudent';
+import Attendance from './Attendance';
+import Transport from './Transport';
 
 // Initial Mock Data
 const INITIAL_STUDENTS = [
@@ -64,20 +68,14 @@ function Home() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [bg, setBg] = useState(false)
   
   // Modals
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
-  const [isLogDisciplineModalOpen, setIsLogDisciplineModalOpen] = useState(false);
 
   // Form States
   const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });
-  const [disciplineForm, setDisciplineForm] = useState({ 
-    studentId: '', 
-    reason: '', 
-    severity: 'Low', 
-    action: '', 
-    date: new Date().toISOString().split('T')[0] 
-  });
+
 
   const stats = useMemo(() => ({
     totalStudents: students.length,
@@ -105,36 +103,8 @@ function Home() {
     setNewStudent({ name: '', grade: '9th', busId: buses[0]?.id || '' });
   };
 
-  const handleLogDiscipline = (e) => {
-    e.preventDefault();
-    const targetId = disciplineForm.studentId || selectedStudent?.id;
-    if (!targetId) return;
 
-    setStudents(prev => prev.map(s => {
-      if (s.id === targetId) {
-        return {
-          ...s,
-          discipline: [...(s.discipline || []), { 
-            ...disciplineForm, 
-            id: `D${Date.now()}` 
-          }]
-        };
-      }
-      return s;
-    }));
 
-    setIsLogDisciplineModalOpen(false);
-    setDisciplineForm({ studentId: '', reason: '', severity: 'Low', action: '', date: new Date().toISOString().split('T')[0] });
-  };
-
-  const deleteDiscipline = (studentId, discId) => {
-    setStudents(prev => prev.map(s => {
-      if (s.id === studentId) {
-        return { ...s, discipline: s.discipline.filter(d => d.id !== discId) };
-      }
-      return s;
-    }));
-  };
 
   const filteredStudents = students.filter(s => 
     s.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -158,7 +128,7 @@ function Home() {
 
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex text-slate-900 font-sans overflow-hidden">
+    <div className={`min-h-screen flex ${!bg? "bg-slate-100": "bg-slate-800"} font-sans overflow-hidden`}>
       
       {/* Desktop Sidebar */}
       <aside className="w-72 bg-slate-900 text-white flex-shrink-0 flex flex-col hidden lg:flex no-print">
@@ -177,7 +147,7 @@ function Home() {
             <button
               key={item.id}
               onClick={() => handleNavClick(item.id)}
-              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-200 ${view === item.id ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
+              className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl transition-all duration-200 ${view === item.id ? 'bg-sky-700 text-white shadow-xl shadow-blue-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800/50'}`}
             >
               <item.icon size={22} className={view === item.id ? 'scale-110' : ''} />
               <span className="font-bold text-[15px]">{item.label}</span>
@@ -228,7 +198,7 @@ function Home() {
 
       <main className="flex-1 flex flex-col overflow-hidden w-full">
         {/* Header */}
-        <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-4 md:py-5 flex justify-between items-center sticky top-0 z-30 no-print">
+        <header className="bg-white backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-4 md:py-5 flex justify-between items-center sticky top-0 z-30 no-print shadow-xl/30 rounded-b-2xl">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
@@ -240,84 +210,37 @@ function Home() {
               {view.replace('-', ' ')}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-10">
             <button 
               onClick={() => setIsAddStudentModalOpen(true)}
               className="bg-slate-900 text-white p-2 md:px-5 md:py-2.5 rounded-xl font-bold text-xs md:text-sm flex items-center gap-2 hover:bg-black transition shadow-lg active:scale-95"
             >
               <Plus size={18} /> <span className="hidden md:inline">New Student</span>
             </button>
+                <button
+            onClick={() => setBg((prev) => !prev)}
+             className={`rounded-3xl w-13 flex h-9 bg-slate-900  items-center ${bg? "justify-end": "justify-start"} inset-shadow-2xs inset-shadow-white shadow-xl/15 border border-t-slate-400 border-l-0 border-r-0 border-b-slate-400`}>
+                {bg
+                ? <Moon className='w-6 h-10 text-slate-100'/> 
+                : <Sun className="text-slate-100 w-6"/>}</button>
           </div>
         </header>
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto">
           {view === 'dashboard' && <Dashbaord buses={buses} students={students} registration={handleRegisterStudent}/>}
-          {view === 'discipline' && <Discipline selectedStudent={selectedStudent} filteredStds= {filteredStudents}/>}
+          {view === 'discipline' && <Discipline selectedStudent={setSelectedStudent} students={students} setStudents={setStudents}/>}
           
-          {view === 'students' && <RegisterStudent filteredStds={filteredStudents}/>}
+          {view === 'students' && <RegisterStudent filteredStds={filteredStudents} setSelectedStudent={setSelectedStudent} setView= {setView}/>}
+          {view === 'attendance' && <Attendance filteredStds={filteredStudents}/>}
+          {view === 'buses' && <Transport/>}
 
-          {['buses', 'attendance'].includes(view) && (
-            <div className="flex flex-col items-center justify-center py-16 md:py-24 bg-white rounded-3xl border-2 border-dashed border-slate-200 px-6 text-center">
-               <div className="bg-slate-50 p-6 rounded-full mb-4">
-                  <Calendar size={40} className="text-slate-300" />
-               </div>
-               <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Future Release</h3>
-               <p className="text-slate-500 max-w-xs text-xs mt-2">The {view} module is part of the Q3 update roadmap.</p>
-            </div>
-          )}
+          
+      
         </div>
       </main>
 
-      {/* Log Discipline Modal */}
-      {isLogDisciplineModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm" onClick={() => setIsLogDisciplineModalOpen(false)} />
-          <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-md overflow-hidden relative animate-in zoom-in-95 duration-200">
-            <div className="bg-rose-600 p-6 text-white flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tighter">Incident Log</h2>
-                <p className="text-rose-100 text-[10px] font-bold opacity-80 uppercase tracking-widest">Administrative Record</p>
-              </div>
-              <button onClick={() => setIsLogDisciplineModalOpen(false)} className="hover:bg-white/20 p-2 rounded-xl transition"><X size={20} /></button>
-            </div>
-            <form onSubmit={handleLogDiscipline} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-              {!selectedStudent && (
-                <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Select Student</label>
-                  <select required className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.studentId} onChange={e => setDisciplineForm({...disciplineForm, studentId: e.target.value})}>
-                    <option value="">Choose from directory...</option>
-                    {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
-              )}
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Reason</label>
-                <textarea required className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 h-24 text-sm" placeholder="Provide incident details..." value={disciplineForm.reason} onChange={e => setDisciplineForm({...disciplineForm, reason: e.target.value})} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Severity</label>
-                  <select className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.severity} onChange={e => setDisciplineForm({...disciplineForm, severity: e.target.value})}>
-                    <option>Low</option><option>Medium</option><option>High</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Date</label>
-                  <input type="date" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.date} onChange={e => setDisciplineForm({...disciplineForm, date: e.target.value})} />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Action Taken</label>
-                <input required type="text" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 text-sm" placeholder="e.g. Detention" value={disciplineForm.action} onChange={e => setDisciplineForm({...disciplineForm, action: e.target.value})} />
-              </div>
-              <button type="submit" className="w-full py-3.5 bg-rose-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-rose-700 transition shadow-lg active:scale-95">
-                Save Record
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+
 
       {/* Enroll Student Modal */}
       {isAddStudentModalOpen && (
