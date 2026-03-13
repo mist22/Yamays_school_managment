@@ -1,5 +1,5 @@
 import React, { useMemo , useState} from 'react'
-
+import {useForm} from "react-hook-form"
 import { 
   Bus, 
   Users, 
@@ -8,9 +8,10 @@ import {
   History,
   UserPlus,
 } from 'lucide-react';
-
 const Dashbaord = ({buses , students, registration}) => {
-        const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });       
+      const {register, handleSubmit, reset} = useForm()
+
+      const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });       
       const stats = useMemo(() => ({
         totalStudents: (students || []).length,
         totalBuses: buses?.length,
@@ -19,6 +20,29 @@ const Dashbaord = ({buses , students, registration}) => {
           : 0,
         disciplineCases: students?.reduce((acc, s) => acc + (s.discipline?.length || 0), 0)
       }), [students, buses]);
+
+  const onsubmit = async(data) => {
+    try{
+      const response = await fetch("http://localhost:3000/register_student", {
+        method: "POST",
+        headers : {"Content-Type" : "application/json"},
+        body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id})
+      })
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Student saved:", result);
+
+    } catch (err) {
+    console.error("Failed to submit student:", err);
+
+  }finally{
+    reset()
+  }
+}
   return (
     
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -46,13 +70,13 @@ const Dashbaord = ({buses , students, registration}) => {
           <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
             <UserPlus className="text-blue-600" size={20} /> Quick Enrollment
           </h3>
-          <form onSubmit={registration} className="space-y-4">
-            <input required type="text" className="w-full px-4 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Student Full Name" value={newStudent?.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} />
+          <form onSubmit={handleSubmit(onsubmit)} className="space-y-4">
+            <input {...register("studentname")} required type="text" className="w-full px-4 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Student Full Name" value={newStudent?.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} />
             <div className="grid grid-cols-2 gap-4">
-              <select className="px-4 py-3 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.grade} onChange={e => setNewStudent({...newStudent, grade: e.target.value})}>
+              <select {...register("grade")} className="px-4 py-3 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.grade} onChange={e => setNewStudent({...newStudent, grade: e.target.value})}>
                 {['9th', '10th', '11th', '12th'].map(g => <option key={g}>{g}</option>)}
               </select>
-              <select className="px-4 py-3 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.busId} onChange={e => setNewStudent({...newStudent, busId: e.target.value})}>
+              <select {...register("bus_id")} className="px-4 py-3 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.busId} onChange={e => setNewStudent({...newStudent, busId: e.target.value})}>
                 {buses?.map(b => <option key={b.id} value={b.id}>{b.id}</option>)}
               </select>
             </div>
@@ -82,7 +106,7 @@ const Dashbaord = ({buses , students, registration}) => {
     </div>
   )
 
-    
+
   
 }
 

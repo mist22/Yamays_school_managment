@@ -57,8 +57,10 @@ const INITIAL_STUDENTS = [
 ];
 
 const INITIAL_BUSES = [
-  { id: 'B1', driver: 'John Doe', morningArrival: '06:00 AM', noonArrival: '12:00 PM', afternoonArrival: '05:00 PM' },
-  { id: 'B2', driver: 'Sarah Connor', morningArrival: '05:45 AM', noonArrival: '12:15 PM', afternoonArrival: '05:15 PM' },
+  { id: 1, driver: 'John Doe', morningArrival: '06:00 AM', noonArrival: '12:00 PM', afternoonArrival: '05:00 PM' },
+  { id: 2, driver: 'moahed ahmed', morningArrival: '05:45 AM', noonArrival: '12:15 PM', afternoonArrival: '05:15 PM' },
+  { id: 3, driver: 'faarah ahmed jaamac', morningArrival: '06:00 AM', noonArrival: '12:30 PM', afternoonArrival: '05:15 PM' },
+  { id: 4, driver: 'abdirizak jaamac muuse', morningArrival: '06:35 AM', noonArrival: '1:00 PM', afternoonArrival: '05:15 PM' },
 ];
 
 function Home() {
@@ -227,7 +229,7 @@ function Home() {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto mt-25">
           {view === 'dashboard' && <Dashbaord buses={buses} students={students} registration={handleRegisterStudent}/>}
           {view === 'discipline' && <Discipline selectedStudent={setSelectedStudent} students={students} setStudents={setStudents}/>}
           
