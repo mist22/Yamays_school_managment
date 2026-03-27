@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 import {  
   ShieldAlert, 
   UserCheck,
@@ -9,44 +9,62 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-
+import { useForm } from 'react-hook-form';
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 const Discipline = ({students, setStudents}) => {
 
-    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [openDiscipline, setopenDiscipline] = useState(null);
     const [searchTerm, setSearchTerm] = useState("")
-       const filteredStudents = students.filter(s => 
+    const filteredStudents = students.filter(s => 
     s.name.toLowerCase().includes(searchTerm.toLowerCase()));
     const [isLogDisciplineModalOpen, setIsLogDisciplineModalOpen] = useState(false);
-      const [disciplineForm, setDisciplineForm] = useState({ 
-        studentId: '', 
-        reason: '', 
-        severity: 'Low', 
-        action: '', 
-        date: new Date().toISOString().split('T')[0] 
-      });
+    const [disciplineForm, setDisciplineForm] = useState([]);
+    const {handleSubmit, register, reset} = useForm()
+    const [student_id, setStudent_id] = useState(0)
+    const [discipline, setDiscipline] = useState([])
+    
 
-  const handleLogDiscipline = (e) => {
-    e.preventDefault();
-    const targetId = disciplineForm.studentId || selectedStudent?.id;
-    if (!targetId) return;
 
-    setStudents(prev => prev.map(s => {
-      if (s.id === targetId) {
-        return {
-          ...s,
-          discipline: [...(s.discipline || []), { 
-            ...disciplineForm, 
-            id: `D${Date.now()}` 
-          }]
-        };
+   const onsubmit = async(data) => {
+    try{
+      const response = await fetch("http://localhost:3000/discipline_register", {
+        method: "POST",
+        headers : {"Content-Type" : "application/json"},
+        body: JSON.stringify({id: student_id, name : data.name, reson : data.reson, severity : data.severity, date:data.date , action: data.action})
+      })
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
       }
-      return s;
-    }));
 
+      const result = await response.json();
+      console.log("Student saved:", result);
 
-    setIsLogDisciplineModalOpen(false);
-    setDisciplineForm({ studentId: '', reason: '', severity: 'Low', action: '', date: new Date().toISOString().split('T')[0] });
+    } catch (err) {
+    console.error("Failed to submit student:", err);
+
+  }finally{
+  reset({
+    reson: "",
+    severity: "",
+    action: "",
+    name: ""
+  })
+    setTimeout(() => {
+      isLogDisciplineModalOpen(false)
+    },2000)
+  }
+   
   };
+  useEffect(() => {
+    async function fetchDiscpline(){
+        const response = await fetch("http://localhost:3000/get_discipline");
+        const data = await response.json()
+        setDiscipline(data.data)
+    }
+    fetchDiscpline()
+  }, [])
   
     const deleteDiscipline = (studentId, discId) => {
     setStudents(prev => prev.map(s => {
@@ -56,7 +74,42 @@ const Discipline = ({students, setStudents}) => {
       return s;
     }));
   };
+  function formatDate(d){
+    const date = new Date(d)
+    return date.toLocaleDateString("en-us", {
+      weekday: "short",
+      year:"numeric",
+      month: "short",
+      day: "numeric"
+    })
+  }
+  function handleDiscipline() {
+    const incidents = discipline.filter(inc => inc.student_id === openDiscipline.id)
+    const doc = new jsPDF();
 
+    // Title of the pdf
+    
+    doc.text(`Incidents Report of student [---] ${openDiscipline.name}`, 14, 15)
+
+    // Table
+    autoTable(doc, {
+      startY: 20,
+      head: [["ID", "Reason", "Severity", "Date", "Action"]],
+      body: incidents.map((i, indx) => [
+        indx+1,
+        i.reson,
+        i.severity,
+        formatDate(i.date),
+        i.action
+      ]),
+    });
+    doc.save("incidents.pdf")
+  }
+  const case_severity = [
+    {severity: "High" , Color: "bg-rose-500"},
+    {severity: "Medium" , Color: "bg-orange-500"},
+    {severity: "Low" , Color: "bg-slate-400"},
+  ]
   return (
       
     <div className="space-y-6">
@@ -91,8 +144,8 @@ const Discipline = ({students, setStudents}) => {
             {filteredStudents?.map(s => (
               <div 
                 key={s.id} 
-                onClick={() => setSelectedStudent(s)}
-                className={`p-4 border-b cursor-pointer transition-all ${selectedStudent?.id === s.id ? 'bg-rose-50 border-l-4 border-l-rose-600' : 'hover:bg-slate-50'}`}
+                onClick={() => setopenDiscipline(s) }
+                className={`p-4 border-b cursor-pointer transition-all ${openDiscipline?.id === s.id ? 'bg-rose-50 border-l-4 border-l-rose-600' : 'hover:bg-slate-50'}`}
               >
                 <div className="flex items-center justify-between">
                   <p className="font-bold text-slate-800 text-sm">{s.name}</p>
@@ -101,7 +154,7 @@ const Discipline = ({students, setStudents}) => {
                 <div className="flex justify-between items-center mt-1">
                   <span className="text-[10px] text-slate-500">Grade {s.grade}</span>
                   <span className="text-[10px] font-bold text-rose-600 bg-rose-100 px-2 py-0.5 rounded-full">
-                    {s.discipline?.length || 0} Cases
+                    {discipline.filter(inc => inc.student_id === s.id).length || 0} Cases
                   </span>
                 </div>
               </div>
@@ -110,39 +163,39 @@ const Discipline = ({students, setStudents}) => {
         </div>
 
         <div className="lg:col-span-2 space-y-4">
-          {selectedStudent ? (
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden print:border-0 print:shadow-none">
+          {openDiscipline ? (
+            <div className="bg-white rounded-2xl border border-slate-400 shadow-xl overflow-hidden print:border-0 print:shadow-none">
               <div className="p-5 border-b flex justify-between items-center bg-slate-900 text-white">
                 <div className="min-w-0 pr-4">
-                  <h3 className="text-lg font-black uppercase tracking-tight truncate">{selectedStudent.name}</h3>
-                  <p className="text-slate-400 text-[10px]">Registry ID: {selectedStudent.id}</p>
+                  <h3 className="text-lg font-black uppercase tracking-tight truncate">{openDiscipline.name}</h3>
+                  <p className="text-slate-400 text-[10px]">Registry ID: {openDiscipline.id}</p>
                 </div>
-                <button onClick={() => window.print()} className="p-2 hover:bg-white/10 rounded-lg transition no-print">
-                  <Printer size={18} />
+                <button onClick={() => handleDiscipline()} className="p-2 hover:bg-white/10 rounded-lg transition no-print">
+                  {discipline.filter(inc => inc.student_id === openDiscipline.id).length > 0 && <Printer size={18} />}
                 </button>
               </div>
               
               <div className="p-5 md:p-8 overflow-y-auto max-h-[500px]">
-                {selectedStudent.discipline?.length > 0 ? (
+                {discipline?.length > 0 ? (
                   <div className="space-y-6">
-                    {selectedStudent.discipline.map((item) => (
+                    {discipline.filter(inc => inc.student_id === openDiscipline.id).map((item) => (
                       <div key={item.id} className="relative pl-6 md:pl-8 border-l-2 border-slate-100 pb-2 group">
-                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-white shadow-sm ${item.severity === 'High' ? 'bg-rose-500' : 'bg-slate-400'}`} />
+                        <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-white shadow-sm ${case_severity.find(s => s.severity === item.severity)?.Color} `} />
                         <div className="bg-slate-50 p-4 md:p-5 rounded-2xl border border-slate-100 relative group">
                           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-2">
                             <div>
-                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.date}</span>
-                              <h4 className="font-bold text-slate-800 text-base">{item.reason}</h4>
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">{item.date.split("T")[0]}</span>
+                              <h4 className="font-bold text-slate-800 text-base">{item.reson}</h4>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className={`text-[9px] font-black px-2 py-1 rounded-lg border uppercase ${
                                 item.severity === 'High' ? 'bg-rose-100 text-rose-700 border-rose-200' : 
                                 item.severity === 'Medium' ? 'bg-orange-100 text-orange-700 border-orange-200' : 
-                                'bg-blue-100 text-blue-700 border-blue-200'
+                                'bg-blue-100 text-blue-500 border-blue-200'
                               }`}>
                                 {item.severity}
                               </span>
-                              <button onClick={() => deleteDiscipline(selectedStudent.id, item.id)} className="text-slate-300 hover:text-rose-600 transition no-print p-1">
+                              <button onClick={() => deleteDiscipline(openDiscipline?.id, item?.id)} className="text-slate-300 hover:text-rose-600 transition no-print p-1">
                                 <Trash2 size={14} />
                               </button>
                             </div>
@@ -186,11 +239,11 @@ const Discipline = ({students, setStudents}) => {
               </div>
               <button onClick={() => setIsLogDisciplineModalOpen(false)} className="hover:bg-white/20 p-2 rounded-xl transition"><X size={20} /></button>
             </div>
-            <form onSubmit={handleLogDiscipline} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-              {!selectedStudent && (
+            <form onSubmit={handleSubmit(onsubmit)} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+              {openDiscipline && (
                 <div>
                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Select Student</label>
-                  <select required className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.studentId} onChange={e => setDisciplineForm({...disciplineForm, studentId: e.target.value})}>
+                  <select {...register("name")} required className="w-full px-4 py-2.5 bg-slate-100 border rounded-xl outline-none text-sm" value={disciplineForm.studentId} onChange={e => setStudent_id( e.target.value)}>
                     <option value="">Choose from directory...</option>
                     {students.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
@@ -198,23 +251,23 @@ const Discipline = ({students, setStudents}) => {
               )}
               <div>
                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Reason</label>
-                <textarea required className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 h-24 text-sm" placeholder="Provide incident details..." value={disciplineForm.reason} onChange={e => setDisciplineForm({...disciplineForm, reason: e.target.value})} />
+                <textarea {...register("reson")} required className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 h-24 text-sm" placeholder="Provide incident details..." />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Severity</label>
-                  <select className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.severity} onChange={e => setDisciplineForm({...disciplineForm, severity: e.target.value})}>
+                  <select {...register("severity")} className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm">
                     <option>Low</option><option>Medium</option><option>High</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Date</label>
-                  <input type="date" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={disciplineForm.date} onChange={e => setDisciplineForm({...disciplineForm, date: e.target.value})} />
+                  <input {...register("date")} type="date" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" />
                 </div>
               </div>
               <div>
                 <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Action Taken</label>
-                <input required type="text" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 text-sm" placeholder="e.g. Detention" value={disciplineForm.action} onChange={e => setDisciplineForm({...disciplineForm, action: e.target.value})} />
+                <input {...register("action")} required type="text" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-rose-500 text-sm" placeholder="e.g. Detention"/>
               </div>
               <button type="submit" className="w-full py-3.5 bg-rose-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-rose-700 transition shadow-lg active:scale-95">
                 Save Record

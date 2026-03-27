@@ -1,4 +1,4 @@
-import React, { useMemo , useState} from 'react'
+import React, { useEffect, useMemo , useRef, useState} from 'react'
 import {useForm} from "react-hook-form"
 import { 
   Bus, 
@@ -7,11 +7,19 @@ import {
   UserCheck,
   History,
   UserPlus,
+  BookDownIcon,
+  UploadCloud,
+  X
 } from 'lucide-react';
+import * as XLSX from "xlsx"
 const Dashbaord = ({buses , students, registration}) => {
-      const {register, handleSubmit, reset} = useForm()
 
-      const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });       
+      const {register, handleSubmit, reset} = useForm()
+      const [discipline , setDiscipline] = useState([])
+      const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });   
+      const [fileupload, setFileUpload] = useState(false)    
+      const [dashboardCards, setDashboardCards] = useState({})
+      const upload = useRef(null)
       const stats = useMemo(() => ({
         totalStudents: (students || []).length,
         totalBuses: buses?.length,
@@ -26,7 +34,7 @@ const Dashbaord = ({buses , students, registration}) => {
       const response = await fetch("http://localhost:3000/register_student", {
         method: "POST",
         headers : {"Content-Type" : "application/json"},
-        body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id})
+        body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id, class_grade:data.class_grade})
       })
 
         if (!response.ok) {
@@ -43,13 +51,86 @@ const Dashbaord = ({buses , students, registration}) => {
     reset()
   }
 }
+
+async function Drivers(){
+  const response = await fetch("http://localhost:3000/get_drivers", {
+    method: "GET"
+  })
+  const data = await response.json()
+  console.log(data?.data.length, "students")
+  return data?.data.length
+}
+async function Students(){
+  const response = await fetch("http://localhost:3000/get_students", {
+    method: "GET"
+  })
+  const data = await response.json()
+  return data?.data.length
+}
+async function Incident(){
+  const response = await fetch("http://localhost:3000/get_discipline", {
+    method: "GET"
+  })
+  const data = await response.json()
+  return data?.data.length
+}
+
+useEffect(() => {
+  const fetchValues = async() => {
+    const students_value = await Students()
+    const drivers_value = await Drivers()
+    const incident_value = await Incident()
+    setDashboardCards(prev => ({
+      ...prev,
+      Students:students_value,
+      Routes :drivers_value,
+      Incidents: incident_value
+      
+  }))
+  }
+  fetchValues()
+},[])
+
+const handleFileUpload = (e) => {
+  try{
+    const file = e.target.files[0]
+
+  const reader = new FileReader();
+  reader.readAsArrayBuffer(file)
+
+  reader.onload = (e) => {
+    const data = new Uint8Array(e.target.result)
+    const workbook = XLSX.read(data, {type: "array"})
+
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const jsonData = XLSX.utils.sheet_to_json(sheet)
+
+    console.log(jsonData)
+  }
+  
+  }catch(err){
+    console.log("fialed to upload files", err)
+  }finally{
+    setFileUpload(false)
+  }
+}
+
+useEffect(() => {
+  async function fetchDiscpline(){
+      const response = await fetch("http://localhost:3000/get_discipline");
+      const data = await response.json()
+      setDiscipline(data.data)
+  }
+  fetchDiscpline()
+  console.log(Object.keys(dashboardCards))
+}, [])
   return (
     
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="relative inset-0 space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: 'Students', value: stats.totalStudents, icon: Users, color: 'bg-blue-600' },
-          { label: 'Routes', value: stats.totalBuses, icon: Bus, color: 'bg-emerald-600' },
+          { label: 'Students', value: dashboardCards.students_value, icon: Users, color: 'bg-blue-600' },
+          { label: 'Routes', value: dashboardCards[1], icon: Bus, color: 'bg-emerald-600' },
           { label: 'Attendance', value: `${stats.avgAttendance}%`, icon: UserCheck, color: 'bg-indigo-600' },
           { label: 'Incidents', value: stats.disciplineCases, icon: ShieldAlert, color: 'bg-rose-600' },
         ].map((stat, i) => (
@@ -59,11 +140,35 @@ const Dashbaord = ({buses , students, registration}) => {
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate">{stat.label}</p>
-              <p className="text-xl font-black text-slate-800">{stat.value}</p>
+              <p className="text-xl font-black text-slate-800">{dashboardCards[stat.label] ? dashboardCards[stat.label] : 0}</p>
             </div>
           </div>
         ))}
       </div>
+      {fileupload && (
+        <div className='fixed inset-0 flex justify-center items-center w-full z-90'>
+      <div className='relative backdrop-blur-sm w-full inset-0 min-h-screen flex justify-center items-center'>
+        <div className='bg-slate-100  w-full max-w-2xl  relative h-150  border-2 border-dashed border-slate-400 rounded shadow-xl/30 shadow-blue-400 z-999'>  
+          
+          <h1 className='text-3xl font bold text-blue-400 text-center p-10'>upload file</h1>
+          <button 
+          onClick={() => setFileUpload(false)} className='absolute right-2 top-5'><X size={30}  className='text-slate-500 hover:rotate-90'/></button>
+        <div className='flex justify-center items-center w-full p-10'>
+          <input ref={upload} type="file"  className='hidden' onChange={(e) => handleFileUpload(e)}/>
+          <div className='flex flex-col justify-center items-center mt-20'>
+              <button
+              type="button"
+              onClick={() => upload.current.click()}
+              ><UploadCloud size={35} className='font-bold transition-transform transform hover:scale-120 duration-300 ease-in-out '/></button>
+              <p className='italic text-slate-600'>upload excel</p>
+          </div>
+        </div>
+        </div>
+      </div>
+        </div>
+        
+      )}
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -73,14 +178,24 @@ const Dashbaord = ({buses , students, registration}) => {
           <form onSubmit={handleSubmit(onsubmit)} className="space-y-4">
             <input {...register("studentname")} required type="text" className="w-full px-4 py-3 bg-slate-50 border rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="Student Full Name" value={newStudent?.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} />
             <div className="grid grid-cols-2 gap-4">
-              <select {...register("grade")} className="px-4 py-3 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.grade} onChange={e => setNewStudent({...newStudent, grade: e.target.value})}>
+              <select {...register("grade")} className="px-4 py-3 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.grade} onChange={e => {setNewStudent({...newStudent, grade: e.target.value}), setGradeChosen(true)}}>
                 {['9th', '10th', '11th', '12th'].map(g => <option key={g}>{g}</option>)}
               </select>
+              
+               <select
+               className='px-2 py-2 bg-slate-100 border border-slate-400 rounded-xl outline-0 focus:right-2 focus:ring-gray-500' 
+               {...register("class_grade")}>
+                {["A", "B", "C", "D", "E", "F"].map(g => <option key={g}>{g}</option>)}
+                </select>
               <select {...register("bus_id")} className="px-4 py-3 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.busId} onChange={e => setNewStudent({...newStudent, busId: e.target.value})}>
                 {buses?.map(b => <option key={b.id} value={b.id}>{b.id}</option>)}
               </select>
+              <button
+              type='button'
+              onClick={() => setFileUpload(true)}
+               className='ml-auto text-blue-400 font-bold'><BookDownIcon size={30}/></button>
             </div>
-            <button type="submit" className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-100 active:scale-95">
+            <button type="submit"  className="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition shadow-lg shadow-blue-100 active:scale-95">
               Register Student
             </button>
           </form>
@@ -91,15 +206,20 @@ const Dashbaord = ({buses , students, registration}) => {
             <History className="text-rose-600" size={20} /> Recent Activity
           </h3>
           <div className="space-y-3">
-             {students?.flatMap(s => s.discipline.map(d => ({...d, sName: s.name}))).slice(-4).reverse().map((item, idx) => (
+            {students.length === 0 ? 
+            <p className='text-2xl animate-pulse font-bold'>Loading....</p>
+            :
+              discipline?.map((item, idx) => (
                <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
                  <div className="min-w-0 pr-2">
-                   <p className="text-sm font-bold text-slate-800 truncate">{item.sName}</p>
-                   <p className="text-[10px] text-slate-500 truncate">{item.reason}</p>
+                   <p className="text-sm font-bold text-slate-800 truncate">{item.reson}</p>
+                   <p className="text-[10px] text-slate-500 truncate">{item.action}</p>
                  </div>
                  <span className="text-[10px] font-black px-2 py-1 rounded bg-rose-100 text-rose-700 uppercase flex-shrink-0">{item.severity}</span>
                </div>
-             ))}
+             ))
+            }
+             
           </div>
         </div>
       </div>

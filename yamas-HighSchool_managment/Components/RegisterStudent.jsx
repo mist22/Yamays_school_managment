@@ -1,8 +1,17 @@
 import { Gavel, Search } from 'lucide-react';
-import React, { useState } from 'react'
+import React, { use, useEffect, useState } from 'react'
 
-const RegisterStudent = ({filteredStds , setSelectedStudent, setView}) => {
+const RegisterStudent = ({filteredStds , setSelectedStudent, setView, buses}) => {
     const [searchTerm, setSearchTerm] = useState("")
+    const [studnetsFiltered, setStudentsFiltered] = useState([])
+
+    useEffect(() => {
+      const filter = filteredStds.filter(s => 
+        s.name.includes(searchTerm.toLowerCase())
+      )
+      setStudentsFiltered(filter)
+
+    },[searchTerm, filteredStds])
   return (
      <div className="space-y-6">
                <div className="bg-white p-4 md:p-6 rounded-2xl border border-slate-200 flex flex-col md:flex-row gap-4 justify-between items-center">
@@ -19,13 +28,14 @@ const RegisterStudent = ({filteredStds , setSelectedStudent, setView}) => {
                        <tr>
                          <th className="px-6 py-4">Student</th>
                          <th className="px-6 py-4 text-center">Grade</th>
+                         <th className="px-6 py-4 text-center">Class</th>
                          <th className="px-6 py-4 text-center">Route</th>
                          <th className="px-6 py-4 text-center">Attendance</th>
                          <th className="px-6 py-4 text-right">Actions</th>
                        </tr>
                      </thead>
                      <tbody className="divide-y divide-slate-100">
-                       {filteredStds?.map(s => (
+                       {studnetsFiltered?.map(s => (
                          <tr key={s.id} className="hover:bg-slate-50 transition-colors group">
                            <td className="px-6 py-4">
                              <div className="flex items-center gap-3">
@@ -37,13 +47,14 @@ const RegisterStudent = ({filteredStds , setSelectedStudent, setView}) => {
                              </div>
                            </td>
                            <td className="px-6 py-4 text-center font-medium text-sm">{s.grade}</td>
+                           <td className="px-6 py-4 text-center font-medium text-sm">{s.class_grade}</td>
                            <td className="px-6 py-4 text-center">
-                             <span className="px-2 py-0.5 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-600">{s.busId}</span>
+                             <span className="px-2 py-0.5 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-600">{s.route}</span>
                            </td>
                            <td className="px-6 py-4 text-center">
                              <div className="flex items-center justify-center gap-2">
                                <div className="w-12 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
-                                 <div className="h-full bg-emerald-500" style={{width: `${s.attendance}%`}} />
+                                 <div className="h-full bg-emerald-500" style={{width: `${s.attendance}`}} />
                                </div>
                                <span className="text-[10px] font-bold">{s.attendance}%</span>
                              </div>

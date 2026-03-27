@@ -1,110 +1,90 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Bus, 
   Users, 
   GraduationCap, 
-  Clock, 
-  ShieldAlert, 
-  Printer, 
   Plus, 
-  Search,
   LayoutDashboard,
-  Calendar,
   UserCheck,
   X,
-  FileText,
-  AlertCircle,
   Gavel,
-  History,
-  Trash2,
-  Filter,
-  UserPlus,
   Moon,
   Sun,
   Menu,
-  ChevronRight,
 } from 'lucide-react';
 import Dashbaord from './Dashbaord';
 import Discipline from './Discipline';
 import RegisterStudent from './RegisterStudent';
 import Attendance from './Attendance';
 import Transport from './Transport';
+import { useForm } from 'react-hook-form';
 
-// Initial Mock Data
-const INITIAL_STUDENTS = [
-  { 
-    id: '1', 
-    name: 'Alice Johnson', 
-    grade: '10th', 
-    busId: 'B1', 
-    attendance: 95, 
-    discipline: [
-      { id: 'd1', date: '2023-11-05', reason: 'Mobile phone usage in class', severity: 'Low', action: 'Verbal Warning' }
-    ], 
-    grades: { Math: 'A', Science: 'B+', English: 'A-' } 
-  },
-  { 
-    id: '2', 
-    name: 'Bob Smith', 
-    grade: '11th', 
-    busId: 'B1', 
-    attendance: 88, 
-    discipline: [
-      { id: 'd2', date: '2023-10-12', reason: 'Repeated Tardy', severity: 'Medium', action: 'After-school Detention' }
-    ], 
-    grades: { Math: 'C', Science: 'B', English: 'B' } 
-  }
-];
 
-const INITIAL_BUSES = [
-  { id: 1, driver: 'John Doe', morningArrival: '06:00 AM', noonArrival: '12:00 PM', afternoonArrival: '05:00 PM' },
-  { id: 2, driver: 'moahed ahmed', morningArrival: '05:45 AM', noonArrival: '12:15 PM', afternoonArrival: '05:15 PM' },
-  { id: 3, driver: 'faarah ahmed jaamac', morningArrival: '06:00 AM', noonArrival: '12:30 PM', afternoonArrival: '05:15 PM' },
-  { id: 4, driver: 'abdirizak jaamac muuse', morningArrival: '06:35 AM', noonArrival: '1:00 PM', afternoonArrival: '05:15 PM' },
-];
+
 
 function Home() {
   const [view, setView] = useState('dashboard');
-  const [students, setStudents] = useState(INITIAL_STUDENTS);
-  const [buses, setBuses] = useState(INITIAL_BUSES);
+  const [students, setStudents] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [bg, setBg] = useState(false)
-  
+  const [drivers, setDrivers] = useState([])
+  const {handleSubmit, register, reset} = useForm()
+
+  const onsubmit = async(data) => {
+    try{
+      const response = await fetch("http://localhost:3000/register_student", {
+        method: "POST",
+        headers : {"Content-Type" : "application/json"},
+        body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id, class_grade:data.class_grade})
+      })
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Student saved:", result);
+
+    } catch (err) {
+    console.error("Failed to submit student:", err);
+
+  }finally{
+    reset({
+      studentname : "",
+      grade: "",
+      bus_id: "",
+      class_grade: ""
+    })
+  }
+}
+
   // Modals
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
 
   // Form States
   const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });
-
-
-  const stats = useMemo(() => ({
-    totalStudents: students.length,
-    totalBuses: buses.length,
-    avgAttendance: students.length > 0 
-      ? (students.reduce((acc, s) => acc + s.attendance, 0) / students.length).toFixed(1)
-      : 0,
-    disciplineCases: students.reduce((acc, s) => acc + (s.discipline?.length || 0), 0)
-  }), [students, buses]);
-
-  const handleRegisterStudent = (e) => {
-    e.preventDefault();
-    const studentToAdd = {
-      id: `S${Date.now()}`,
-      name: newStudent.name,
-      grade: newStudent.grade,
-      busId: newStudent.busId,
-      attendance: 100,
-      discipline: [],
-      grades: { Math: 'N/A', Science: 'N/A', English: 'N/A' }
-    };
-    
-    setStudents(prev => [...prev, studentToAdd]);
-    setIsAddStudentModalOpen(false);
-    setNewStudent({ name: '', grade: '9th', busId: buses[0]?.id || '' });
-  };
-
+  let getDrivers = async() => {
+      let retriveDrivers = await fetch ("http://localhost:3000/get_drivers")
+      const data = await retriveDrivers.json()
+      console.log(data)
+      setDrivers(data.data)
+    }
+  useEffect(() => {
+  
+    getDrivers()
+  }, [])
+ let getStudents = useCallback (async() => {
+      let retriveStudents = await fetch ("http://localhost:3000/get_students")
+      const data = await retriveStudents.json()
+      console.log(data)
+      setStudents(data.data)
+    }, [])
+  useEffect(() => {
+   
+    getStudents()
+  }, [])
 
 
 
@@ -172,7 +152,7 @@ function Home() {
 
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden no-print">
+        <div className="fixed inset-0 z-50 lg:hidden no-print overflow-x-auto">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-72 bg-slate-900 text-white flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="p-6 flex items-center justify-between">
@@ -230,11 +210,12 @@ function Home() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto mt-25">
-          {view === 'dashboard' && <Dashbaord buses={buses} students={students} registration={handleRegisterStudent}/>}
+          {view === 'dashboard' && <Dashbaord buses={drivers} students={students}/>}
           {view === 'discipline' && <Discipline selectedStudent={setSelectedStudent} students={students} setStudents={setStudents}/>}
           
+
           {view === 'students' && <RegisterStudent filteredStds={filteredStudents} setSelectedStudent={setSelectedStudent} setView= {setView}/>}
-          {view === 'attendance' && <Attendance filteredStds={filteredStudents}/>}
+          {view === 'attendance' && <Attendance students={students}/>}
           {view === 'buses' && <Transport/>}
 
           
@@ -256,24 +237,35 @@ function Home() {
               </div>
               <button onClick={() => setIsAddStudentModalOpen(false)} className="hover:bg-white/20 p-2 rounded-xl transition"><X size={20} /></button>
             </div>
-            <form onSubmit={handleRegisterStudent} className="p-6 space-y-4">
+            <form onSubmit={handleSubmit(onsubmit)} className="p-6 space-y-4">
                <div>
                   <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Full Name</label>
-                  <input required type="text" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" placeholder="First Last" value={newStudent.name} onChange={e => setNewStudent({...newStudent, name: e.target.value})} />
+                  <input {...register("studentname")} required type="text" className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" placeholder="First Last" />
                </div>
                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Grade</label>
-                    <select className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.grade} onChange={e => setNewStudent({...newStudent, grade: e.target.value})}>
+                    <select {...register("grade")} className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.grade} onChange={e => setNewStudent({...newStudent, grade: e.target.value})}>
                       <option>9th</option><option>10th</option><option>11th</option><option>12th</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Bus ID</label>
-                    <select className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" value={newStudent.busId} onChange={e => setNewStudent({...newStudent, busId: e.target.value})}>
-                      {buses.map(b => <option key={b.id} value={b.id}>{b.id}</option>)}
+                    <select {...register("bus_id")} className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm">
+                      {drivers?.map(b => <option key={b.id} value={b.id}>{b.id}</option>)}
                     </select>
                   </div>
+                  <div className='flex flex-col'>
+                  <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Class_Grade</label>
+                    <select {...register("class_grade")} className="w-full px-4 py-2.5 bg-slate-50 border rounded-xl outline-none text-sm" >
+                      {
+                      ["A", "B", "C", "D", "E", "F"]
+                      .map((item, inx) => (
+                        <option key={inx}>{item}</option>
+                      )) 
+                      }
+                    </select>
+                    </div>
                </div>
                <button type="submit" className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-black uppercase tracking-widest text-xs hover:bg-blue-700 transition shadow-lg active:scale-95">
                 Register Now

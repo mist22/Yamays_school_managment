@@ -1,0 +1,16 @@
+{
+  "name": "yamas-highschool-managment",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "server": "nodemon Server/server.js",
+    "client": "npm run dev --prefix yamas-HighSchool_managment",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.14"
+  }
+}
