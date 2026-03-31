@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Bus, 
   Users, 
@@ -25,12 +25,14 @@ import { useForm } from 'react-hook-form';
 function Home() {
   const [view, setView] = useState('dashboard');
   const [students, setStudents] = useState([]);
+  const [show, setShow] =useState(false)
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [message, setMessage] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [bg, setBg] = useState(false)
   const [drivers, setDrivers] = useState([])
   const {handleSubmit, register, reset} = useForm()
+  const timeOut = useRef(null)
 
   const onsubmit = async(data) => {
     try{
@@ -41,6 +43,8 @@ function Home() {
       })
 
         if (!response.ok) {
+          const data = await response.json()
+          setMessage(data)
           throw new Error(`Server error: ${response.status}`);
       }
 
@@ -57,15 +61,35 @@ function Home() {
       bus_id: "",
       class_grade: ""
     })
+
   }
 }
+
+  useEffect(() => {
+     if(message){
+      setShow(true)
+    }
+    
+
+    if(timeOut.current){
+      clearTimeout(timeOut.current)
+    }
+    timeOut.current = setTimeout(() => {
+      setShow(false)
+
+      setTimeout(() => {
+        setMessage(null)
+      },300)
+      setMessage(null)
+    }, 3000)
+  }, [message])
 
   // Modals
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
 
   // Form States
-  const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });
-  let getDrivers = async() => {
+const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });
+let getDrivers = async() => {
       let retriveDrivers = await fetch ("http://localhost:3000/get_drivers")
       const data = await retriveDrivers.json()
       console.log(data)
@@ -74,8 +98,9 @@ function Home() {
   useEffect(() => {
   
     getDrivers()
-  }, [])
- let getStudents = useCallback (async() => {
+  }, []);
+
+let getStudents = useCallback (async() => {
       let retriveStudents = await fetch ("http://localhost:3000/get_students")
       const data = await retriveStudents.json()
       console.log(data)
@@ -94,7 +119,7 @@ function Home() {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'students', label: 'Student Registry', icon: Users },
+    { id: 'students', label: 'Students', icon: Users },
     { id: 'discipline', label: 'Discipline Tracking', icon: Gavel },
     { id: 'buses', label: 'Transportation', icon: Bus },
     { id: 'attendance', label: 'Attendance', icon: UserCheck },
@@ -110,7 +135,13 @@ function Home() {
 
 
   return (
-    <div className={`min-h-screen flex ${!bg? "bg-slate-100": "bg-slate-800"} font-sans overflow-hidden`}>
+    <div className={`relative min-h-screen flex ${!bg? "bg-slate-100": "bg-slate-800"} font-sans overflow-hidden`}>
+      {message && (
+        <div className={`absolute top-1/8 left-1/2 -translate-x-1/2 -translate-y-1/2  ${message?.error? "bg-rose-400/70" : "text-emerald-400/70"} 
+        inset-shadow-2xs ${!bg? "inset-shadow-olive-400" : "inset-shadow-olive-900"}  w-50 rounded-xl backdrop-blur-3xl  shadow-xl/30 shadow-slate-700 p-2 z-999 ${show? "opacity-100" : "opacity-0"} transition-opacity  duration-300`}>
+        <h1 className='text-center text-white font-bold'>{message ? Object.values(message)[0] : "[../..]"}</h1>
+      </div>
+      )}
       
       {/* Desktop Sidebar */}
       <aside className="w-72 bg-slate-900 text-white flex-shrink-0 flex flex-col hidden lg:flex no-print">
@@ -178,7 +209,7 @@ function Home() {
         </div>
       )}
 
-      <main className="flex-1 flex flex-col overflow-hidden w-full">
+      <main className=" realtive flex-1 flex flex-col overflow-hidden w-full">
         {/* Header */}
         <header className="bg-white backdrop-blur-md border-b border-slate-200 px-4 md:px-8 py-4 md:py-5 flex justify-between items-center sticky top-0 z-30 no-print shadow-xl/30 rounded-b-2xl">
           <div className="flex items-center gap-3">
@@ -210,7 +241,7 @@ function Home() {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto mt-25">
-          {view === 'dashboard' && <Dashbaord buses={drivers} students={students}/>}
+          {view === 'dashboard' && <Dashbaord buses={drivers} students={students} message={setMessage}/>}
           {view === 'discipline' && <Discipline selectedStudent={setSelectedStudent} students={students} setStudents={setStudents}/>}
           
 

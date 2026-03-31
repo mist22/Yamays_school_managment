@@ -9,16 +9,22 @@ import {
   UserPlus,
   BookDownIcon,
   UploadCloud,
-  X
+  X,
+  Loader2,
+  Check,
+  CheckCircle,
+  CrossIcon,
+  XCircle
 } from 'lucide-react';
-import * as XLSX from "xlsx"
-const Dashbaord = ({buses , students, registration}) => {
+import Exceljs, { Workbook } from "exceljs"
+const Dashbaord = ({buses , students, message}) => {
 
       const {register, handleSubmit, reset} = useForm()
       const [discipline , setDiscipline] = useState([])
       const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });   
       const [fileupload, setFileUpload] = useState(false)    
       const [dashboardCards, setDashboardCards] = useState({})
+      const [uploaded, setUploaded] = useState(null)
       const upload = useRef(null)
       const stats = useMemo(() => ({
         totalStudents: (students || []).length,
@@ -38,6 +44,8 @@ const Dashbaord = ({buses , students, registration}) => {
       })
 
         if (!response.ok) {
+          const data = await response.json()
+          message(data)
           throw new Error(`Server error: ${response.status}`);
       }
 
@@ -91,27 +99,66 @@ useEffect(() => {
   fetchValues()
 },[])
 
-const handleFileUpload = (e) => {
+const handleFileUpload = async(e) =>{
   try{
     const file = e.target.files[0]
+    if(!file) return
 
-  const reader = new FileReader();
-  reader.readAsArrayBuffer(file)
+    const worbook = new Exceljs.Workbook()
 
-  reader.onload = (e) => {
-    const data = new Uint8Array(e.target.result)
-    const workbook = XLSX.read(data, {type: "array"})
 
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const jsonData = XLSX.utils.sheet_to_json(sheet)
+    //read the file as array buffer
+    const arrayBuffer = await  file.arrayBuffer()
+    await worbook.xlsx.load(arrayBuffer)
 
-    console.log(jsonData)
-  }
-  
-  }catch(err){
-    console.log("fialed to upload files", err)
-  }finally{
-    setFileUpload(false)
+    const worksheet = worbook.worksheets[0];
+
+    let jsonData = []
+    let headers = []
+    worksheet.eachRow((row, rownumber) => {
+      const rowValues = row.values;
+
+      if(rownumber === 1){
+        headers = rowValues.slice(1)
+      }else{
+        let obj = {}
+        headers.forEach((header, index) => {
+          obj[header] = rowValues[index + 1]
+        });
+        jsonData.push(obj)
+      }
+    });
+      const res = await fetch("http://localhost:3000/batch_students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(jsonData),
+      });
+
+      if (!res.ok) {
+         const data = await res.json()
+          message(data)
+          setUploaded(false)
+      }
+      if(res.ok){
+      const data = await res.json();
+      console.log("students batch uploaded", data);
+      
+
+      console.log(jsonData);
+      setUploaded(true)
+      }
+      
+    }catch (err) {
+    setUploaded(false)
+    console.log("failed to upload file", err);
+  } finally {
+    
+    setTimeout(() => {
+      setFileUpload(false)
+      setTimeout(() => {
+        setUploaded(null);
+      }, 2000);
+    },1000)
   }
 }
 
@@ -140,7 +187,7 @@ useEffect(() => {
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider truncate">{stat.label}</p>
-              <p className="text-xl font-black text-slate-800">{dashboardCards[stat.label] ? dashboardCards[stat.label] : 0}</p>
+              <p className="text-xl font-black text-slate-800">{dashboardCards[stat.label] ? dashboardCards[stat.label] : <Loader2 className='animate-spin' /> || 0}</p>
             </div>
           </div>
         ))}
@@ -154,12 +201,15 @@ useEffect(() => {
           <button 
           onClick={() => setFileUpload(false)} className='absolute right-2 top-5'><X size={30}  className='text-slate-500 hover:rotate-90'/></button>
         <div className='flex justify-center items-center w-full p-10'>
-          <input ref={upload} type="file"  className='hidden' onChange={(e) => handleFileUpload(e)}/>
+          <input ref={upload} type="file" 
+          accept='.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          className='hidden' onChange={(e) => handleFileUpload(e)}/>
           <div className='flex flex-col justify-center items-center mt-20'>
               <button
               type="button"
               onClick={() => upload.current.click()}
-              ><UploadCloud size={35} className='font-bold transition-transform transform hover:scale-120 duration-300 ease-in-out '/></button>
+              className='font-bold transition-transform transform hover:scale-120 duration-300 ease-in-out'
+              >{uploaded === true ? (<CheckCircle size={35} className='text-green-400'/>) : uploaded === false ? (< XCircle size={35} className='text-rose-400'/>) : <UploadCloud size={35}/>}</button>
               <p className='italic text-slate-600'>upload excel</p>
           </div>
         </div>
@@ -215,7 +265,7 @@ useEffect(() => {
                    <p className="text-sm font-bold text-slate-800 truncate">{item.reson}</p>
                    <p className="text-[10px] text-slate-500 truncate">{item.action}</p>
                  </div>
-                 <span className="text-[10px] font-black px-2 py-1 rounded bg-rose-100 text-rose-700 uppercase flex-shrink-0">{item.severity}</span>
+                 <span className={`text-[10px] font-black px-2 py-1 rounded backdrop-blur-2xl ${item.severity === "High" ? "bg-rose-200" : item.severity === "Medium"? "bg-amber-100" : "bg-blue-100"}  uppercase flex-shrink-0`}>{item.severity}</span>
                </div>
              ))
             }

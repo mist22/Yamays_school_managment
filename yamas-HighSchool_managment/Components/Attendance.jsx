@@ -44,6 +44,7 @@ function Attendance({ students}) {
     )
     setFilteredStudents(filter)
   },[SelectedGrade])
+
   useEffect(() => {
     const objs = Object.entries(attendance).map(([student_id , status]) => ({
       student_id, 
@@ -141,7 +142,7 @@ useEffect(() => {
                         </div>
                         <div>
                           <p className="font-bold text-slate-800 text-sm">{s.name}</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Grade {s.grade}</p>
+                          <p className="text-[10px] text-slate-400 font-medium">Grade {!s.grade.includes("th") ? s.grade + "th" : s.grade}</p>
                         </div>
                       </div>
                     </td>
@@ -209,16 +210,16 @@ useEffect(() => {
                 >
                   <span className="text-[10px] font-black opacity-60">{s.name[0]}</span>
                   {/* Simple Tooltip */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-24 bg-white text-slate-900 p-2 rounded-lg  text-[9px] font-bold shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 border border-slate-200">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 translate-y-1/2 mb-2 w-24 bg-white text-slate-900 p-2 rounded-lg  text-[9px] font-bold text-center shadow-2xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 border border-slate-200">
                     {s.name}
                   </div>
                 </div>
               ))}
-              {[...Array(Math.max(0, 12 - students?.length || 0))].map((_, i) => (
+              {[...Array(Math.max(0, 60 ))].map((_, i) => (
                 <div key={i} className="aspect-square rounded-xl border-2 border-dashed border-slate-700 bg-slate-800/50" />
               ))}
             </div>
-            <div className="mt-6 p-4 bg-slate-800 rounded-2xl flex items-center gap-3">
+            <div className="p-4 bg-slate-800 rounded-2xl flex items-center gap-3">
               <div className="p-2 bg-indigo-500/20 text-indigo-400 rounded-lg"><Info size={16} /></div>
               <p className="text-[10px] leading-tight text-slate-400 font-medium">Visualizing current classroom occupancy</p>
             </div>

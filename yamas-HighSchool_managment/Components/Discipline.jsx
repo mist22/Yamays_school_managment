@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react'
+import React, { use, useEffect, useState , message} from 'react'
 import {  
   ShieldAlert, 
   UserCheck,
@@ -35,6 +35,8 @@ const Discipline = ({students, setStudents}) => {
       })
 
         if (!response.ok) {
+           const data = await res.json()
+          message(data)
           throw new Error(`Server error: ${response.status}`);
       }
 
@@ -65,6 +67,7 @@ const Discipline = ({students, setStudents}) => {
     }
     fetchDiscpline()
   }, [])
+  
   
     const deleteDiscipline = (studentId, discId) => {
     setStudents(prev => prev.map(s => {
@@ -144,7 +147,7 @@ const Discipline = ({students, setStudents}) => {
             {filteredStudents?.map(s => (
               <div 
                 key={s.id} 
-                onClick={() => setopenDiscipline(s) }
+                onClick={() => {setopenDiscipline(s) , setStudent_id(s.id)}}
                 className={`p-4 border-b cursor-pointer transition-all ${openDiscipline?.id === s.id ? 'bg-rose-50 border-l-4 border-l-rose-600' : 'hover:bg-slate-50'}`}
               >
                 <div className="flex items-center justify-between">
@@ -176,7 +179,7 @@ const Discipline = ({students, setStudents}) => {
               </div>
               
               <div className="p-5 md:p-8 overflow-y-auto max-h-[500px]">
-                {discipline?.length > 0 ? (
+                {discipline.filter((ds) => ds.student_id === student_id).length > 0  ? (
                   <div className="space-y-6">
                     {discipline.filter(inc => inc.student_id === openDiscipline.id).map((item) => (
                       <div key={item.id} className="relative pl-6 md:pl-8 border-l-2 border-slate-100 pb-2 group">

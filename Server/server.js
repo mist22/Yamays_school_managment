@@ -36,7 +36,7 @@ app.post('/register_student', async (req, res) => {
     let check = await client.query(`SELECT * FROM students WHERE name = $1`, [name]);
     if (check.rows.length > 0) {
       await client.query("ROLLBACK");
-      return res.status(200).json({ message: "student record already exists" });
+      return res.status(403).json({ error: "student record already exists" });
     }
 
     // Insert new student
@@ -73,7 +73,7 @@ app.post('/register_driver', async (req, res) => {
     let check = await client.query(`SELECT bus_id FROM buses WHERE bus_id = $1`, [bus_id]);
     if (check.rows.length > 0) {
       await client.query("ROLLBACK");
-      return res.status(200).json({ message: "driver record already exists" });
+      return res.status(403).json({ error: "driver record already exists" });
     }
 
     // Insert new student
@@ -217,15 +217,36 @@ app.delete('/delete_driver/:id', async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+app.delete('/student_delete/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await pool.query(
+      "DELETE FROM students WHERE id = $1",
+      [id]
+    );
+
+    res.json({ message: "student deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 
 app.post("/batch_students", async (req, res) => {
   const students = req.body;
+  console.log(students)
   const client = await pool.connect();
-
+   
   try {
     await client.query("BEGIN");
 
     for (let s of students) {
+      let check = await client.query(`SELECT name FROM students WHERE name = $1`, [s.name]);
+      if (check.rows.length > 0) {
+        await client.query("ROLLBACK");
+        return res.status(403).json({ error: "at least one  record already exists in the database" });
+      }
       await client.query(
         `INSERT INTO students (name, grade, bus_id, class_grade)
          VALUES ($1, $2, $3, $4)`,
