@@ -26,6 +26,7 @@ import BASE_URL from '../apiurls';
 
 
 function Home() {
+  console.log(BASE_URL)
   const [view, setView] = useState('dashboard');
   const [students, setStudents] = useState([]);
   const [show, setShow] =useState(false)
