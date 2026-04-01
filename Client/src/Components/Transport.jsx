@@ -16,7 +16,8 @@ import {
   Info
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-
+import 
+  BASE_URL from '../apiurls';
 /**
  * TRANSPORTATION MODULE - DATABASE INTEGRATED
  * Features: Live DB Fetching, POST registration, and Custom Delete Warning Modal
@@ -41,7 +42,7 @@ function Transport() {
   const fetchFleet = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/get_drivers");
+      const response = await fetch(`${BASE_URL}/api/get_drivers`);
       if (!response.ok) throw new Error("Failed to fetch fleet data");
       const data = await response.json();
       setFleet(data.data || []);
@@ -85,7 +86,7 @@ function Transport() {
   // 4. DATABASE SUBMISSION (POST)
   const onsubmit = async (data) => {
     try {
-      const response = await fetch("/api/register_driver", {
+      const response = await fetch(`${BASE_URL}/api/register_driver`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -123,7 +124,7 @@ function Transport() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`/api/delete_driver/${deleteConfirm.driverId}`, { 
+      const response = await fetch(`${BASE_URL}/api/delete_driver/${deleteConfirm.driverId}`, { 
         method: 'DELETE' 
       });
       

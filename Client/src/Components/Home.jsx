@@ -20,6 +20,7 @@ import Attendance from './Attendance';
 import Transport from './Transport';
 import { useForm } from 'react-hook-form';
 import Payments from './Payments';
+import BASE_URL from '../apiurls';
 
 
 
@@ -38,7 +39,7 @@ function Home() {
 
   const onsubmit = async(data) => {
     try{
-      const response = await fetch("/api/register_student", {
+      const response = await fetch(`${BASE_URL}/register_student`, {
         method: "POST",
         headers : {"Content-Type" : "application/json"},
         body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id, class_grade:data.class_grade})
@@ -92,7 +93,7 @@ function Home() {
   // Form States
 const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });
 let getDrivers = async() => {
-      let retriveDrivers = await fetch ("/api/get_drivers")
+      let retriveDrivers = await fetch (`${BASE_URL}/get_drivers`)
       const data = await retriveDrivers.json()
       console.log(data)
       setDrivers(data.data)
@@ -103,7 +104,7 @@ let getDrivers = async() => {
   }, []);
 
 let getStudents = useCallback (async() => {
-      let retriveStudents = await fetch ("/api/get_students")
+      let retriveStudents = await fetch (`${BASE_URL}/get_students`)
       const data = await retriveStudents.json()
       console.log(data)
       setStudents(data.data)
