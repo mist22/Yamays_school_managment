@@ -6,7 +6,7 @@ import cors from "cors"
 let app = express()
 const {Pool} = pkg
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", 'https://yamays-school.pages.dev'],
     methods: ["POST", "GET", "DELETE", "PUT", "OPTIONS"],
 }))
 
