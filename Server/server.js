@@ -266,6 +266,6 @@ app.post("/api/batch_students", async (req, res) => {
   }
 });
 
-app.listen(3000, "localhost", () => {
+app.listen(3000, "0.0.0.0", () => {
     console.log("Server running on http://localhost:3000")
 })

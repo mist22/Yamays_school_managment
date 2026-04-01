@@ -86,7 +86,7 @@ function Transport() {
   // 4. DATABASE SUBMISSION (POST)
   const onsubmit = async (data) => {
     try {
-      const response = await fetch(`${BASE_URL}/api/register_driver`, {
+      const response = await fetch(`${BASE_URL}/register_driver`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,7 +124,7 @@ function Transport() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/api/delete_driver/${deleteConfirm.driverId}`, { 
+      const response = await fetch(`${BASE_URL}/delete_driver/${deleteConfirm.driverId}`, { 
         method: 'DELETE' 
       });
       
