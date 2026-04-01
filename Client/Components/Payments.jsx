@@ -38,7 +38,7 @@ function Payments() {
   const fetchPayments = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:3000/get_payments"); 
+      const response = await fetch("api/get_payments"); 
       if (!response.ok) throw new Error("Failed to fetch payment data");
       const data = await response.json();
       setPayments(data.data || []);
@@ -77,7 +77,7 @@ function Payments() {
   // 4. REGISTER NEW FEE (POST)
   const onsubmit = async (data) => {
     try {
-      const response = await fetch("http://localhost:3000/register_payment", {
+      const response = await fetch("api/register_payment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -107,7 +107,7 @@ function Payments() {
   );
 
   return (
-    <div className="min-h-screen space-y-6 animate-in fade-in duration-500 p-4 md:p-8 bg-slate-50">
+    <div className="h-100 space-y-6 animate-in fade-in duration-500 p-4 md:p-8 bg-slate-50">
       
       {/* 1. FINANCIAL KPI CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -142,7 +142,7 @@ function Payments() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* LEFT: PAYMENT REGISTRATION & HISTORY */}
         <div className="xl:col-span-3 space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+          <div className="bg-white rounded-3xl border border-slate-200  shadow-sm h-100 overflow-x-auto overflow-y-auto">
             <header className="p-6 border-b flex flex-col md:flex-row justify-between gap-4 items-center">
               <div className="flex items-center gap-3">
                 <div className="bg-slate-900 p-2.5 rounded-2xl text-white"><CreditCard size={20} /></div>

@@ -23,7 +23,7 @@ pool.connect()
   .then(() => console.log("Connected to PostgreSQL"))
   .catch(err => console.error("Postgres connection error:", err));
 
-app.post('/register_student', async (req, res) => {
+app.post('/api/register_student', async (req, res) => {
   const { name, grade, bus_id, class_grade } = req.body;
   // console.log(name, grade, bus_id);
 
@@ -60,7 +60,7 @@ app.post('/register_student', async (req, res) => {
   }
 });
 
-app.post('/register_driver', async (req, res) => {
+app.post('/api/register_driver', async (req, res) => {
   const { bus_id, name, route, license, phone, status} = req.body;
   // console.log(bus_id, name, route, license, phone);
 
@@ -97,7 +97,7 @@ app.post('/register_driver', async (req, res) => {
   }
 });
 
-app.post('/discipline_register', async (req, res) => {
+app.post('/api/discipline_register', async (req, res) => {
   const {id, reson,  severity, date, action} = req.body;
   console.log(id, reson, severity, date, action);
 
@@ -127,7 +127,7 @@ app.post('/discipline_register', async (req, res) => {
     client.release();
   }
 });
-app.get('/get_drivers', async (req, res) => {
+app.get('/api/get_drivers', async (req, res) => {
   
   const client = await pool.connect();
 
@@ -153,7 +153,7 @@ app.get('/get_drivers', async (req, res) => {
     client.release();
   }
 });
-app.get('/get_students', async (req, res) => {
+app.get('/api/get_students', async (req, res) => {
   
   const client = await pool.connect();
 
@@ -177,7 +177,7 @@ app.get('/get_students', async (req, res) => {
     client.release();
   }
 });
-app.get('/get_discipline', async (req, res) => {
+app.get('/api/get_discipline', async (req, res) => {
   
   const client = await pool.connect();
 
@@ -202,7 +202,7 @@ app.get('/get_discipline', async (req, res) => {
   }
 });
 
-app.delete('/delete_driver/:id', async (req, res) => {
+app.delete('/api/delete_driver/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -217,7 +217,7 @@ app.delete('/delete_driver/:id', async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-app.delete('/student_delete/:id', async (req, res) => {
+app.delete('/api/student_delete/:id', async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -233,7 +233,7 @@ app.delete('/student_delete/:id', async (req, res) => {
   }
 });
 
-app.post("/batch_students", async (req, res) => {
+app.post("/api/batch_students", async (req, res) => {
   const students = req.body;
   console.log(students)
   const client = await pool.connect();

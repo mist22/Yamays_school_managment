@@ -8,7 +8,7 @@ const RegisterStudent = () => {
     const [students, setStudents] = useState([])
 
      let getStudents = useCallback (async() => {
-          let retriveStudents = await fetch ("http://localhost:3000/get_students")
+          let retriveStudents = await fetch ("/api/get_students")
           const data = await retriveStudents.json()
           console.log(data)
           setStudents(data.data)
@@ -27,7 +27,7 @@ const RegisterStudent = () => {
     },[searchTerm])
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/student_delete/${selectedstudent.id}`, { 
+      const response = await fetch(`/api/student_delete/${selectedstudent.id}`, { 
         method: 'DELETE' 
       });
       

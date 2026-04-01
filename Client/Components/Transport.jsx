@@ -41,7 +41,7 @@ function Transport() {
   const fetchFleet = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("http://localhost:3000/get_drivers");
+      const response = await fetch("/api/get_drivers");
       if (!response.ok) throw new Error("Failed to fetch fleet data");
       const data = await response.json();
       setFleet(data.data || []);
@@ -85,7 +85,7 @@ function Transport() {
   // 4. DATABASE SUBMISSION (POST)
   const onsubmit = async (data) => {
     try {
-      const response = await fetch("http://localhost:3000/register_driver", {
+      const response = await fetch("/api/register_driver", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -123,7 +123,7 @@ function Transport() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/delete_driver/${deleteConfirm.driverId}`, { 
+      const response = await fetch(`/api/delete_driver/${deleteConfirm.driverId}`, { 
         method: 'DELETE' 
       });
       

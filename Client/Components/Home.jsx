@@ -11,6 +11,7 @@ import {
   Moon,
   Sun,
   Menu,
+  DollarSign,
 } from 'lucide-react';
 import Dashbaord from './Dashbaord';
 import Discipline from './Discipline';
@@ -18,6 +19,7 @@ import RegisterStudent from './RegisterStudent';
 import Attendance from './Attendance';
 import Transport from './Transport';
 import { useForm } from 'react-hook-form';
+import Payments from './Payments';
 
 
 
@@ -36,7 +38,7 @@ function Home() {
 
   const onsubmit = async(data) => {
     try{
-      const response = await fetch("http://localhost:3000/register_student", {
+      const response = await fetch("/api/register_student", {
         method: "POST",
         headers : {"Content-Type" : "application/json"},
         body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id, class_grade:data.class_grade})
@@ -90,7 +92,7 @@ function Home() {
   // Form States
 const [newStudent, setNewStudent] = useState({ name: '', grade: '9th', busId: 'B1' });
 let getDrivers = async() => {
-      let retriveDrivers = await fetch ("http://localhost:3000/get_drivers")
+      let retriveDrivers = await fetch ("/api/get_drivers")
       const data = await retriveDrivers.json()
       console.log(data)
       setDrivers(data.data)
@@ -101,7 +103,7 @@ let getDrivers = async() => {
   }, []);
 
 let getStudents = useCallback (async() => {
-      let retriveStudents = await fetch ("http://localhost:3000/get_students")
+      let retriveStudents = await fetch ("/api/get_students")
       const data = await retriveStudents.json()
       console.log(data)
       setStudents(data.data)
@@ -123,6 +125,7 @@ let getStudents = useCallback (async() => {
     { id: 'discipline', label: 'Discipline Tracking', icon: Gavel },
     { id: 'buses', label: 'Transportation', icon: Bus },
     { id: 'attendance', label: 'Attendance', icon: UserCheck },
+    { id: 'payments', label: 'Payments', icon: DollarSign },
   ];
 
   const handleNavClick = (id) => {
@@ -248,6 +251,7 @@ let getStudents = useCallback (async() => {
           {view === 'students' && <RegisterStudent filteredStds={filteredStudents} setSelectedStudent={setSelectedStudent} setView= {setView}/>}
           {view === 'attendance' && <Attendance students={students}/>}
           {view === 'buses' && <Transport/>}
+          {view === 'payments' && <Payments/>}
 
           
       

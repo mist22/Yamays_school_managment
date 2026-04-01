@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "server": "nodemon Server/server.js",
-    "client": "npm run dev --prefix yamas-HighSchool_managment",
+    "client": "npm run dev --prefix Client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "preview": "vite preview"
   },
