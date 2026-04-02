@@ -18,6 +18,7 @@ import {
   ArrowDownLeft
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import BASE_URL from '../apiurls';
 
 /**
  * PAYMENTS & FEE MANAGEMENT MODULE
@@ -38,7 +39,7 @@ function Payments() {
   const fetchPayments = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("api/get_payments"); 
+      const response = await fetch(`${BASE_URL}/get_payments`); 
       if (!response.ok) throw new Error("Failed to fetch payment data");
       const data = await response.json();
       setPayments(data.data || []);

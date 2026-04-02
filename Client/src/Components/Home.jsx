@@ -247,10 +247,10 @@ let getStudents = useCallback (async() => {
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto p-4 md:p-8 w-full max-w-7xl mx-auto mt-25">
           {view === 'dashboard' && <Dashbaord buses={drivers} students={students} message={setMessage}/>}
-          {view === 'discipline' && <Discipline selectedStudent={setSelectedStudent} students={students} setStudents={setStudents}/>}
+          {view === 'discipline' && <Discipline students={students} setStudents={setStudents}/>}
           
 
-          {view === 'students' && <RegisterStudent filteredStds={filteredStudents} setSelectedStudent={setSelectedStudent} setView= {setView}/>}
+          {view === 'students' && <RegisterStudent filteredStds={filteredStudents}  setView= {setView}/>}
           {view === 'attendance' && <Attendance students={students}/>}
           {view === 'buses' && <Transport/>}
           {view === 'payments' && <Payments/>}

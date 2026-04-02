@@ -201,6 +201,30 @@ app.get('/api/get_discipline', async (req, res) => {
     client.release();
   }
 });
+app.get('/api/get_payments', async (req, res) => {
+  
+  const client = await pool.connect();
+
+  try {
+    await client.query("BEGIN");
+
+
+    // Select drivers
+    const insertResult = await client.query("SELECT *FROM students");
+
+    await client.query("COMMIT");
+
+    return res.status(200).json({ 
+      data: insertResult.rows
+  });
+  } catch (err) {
+    await client.query("ROLLBACK");
+    console.error(err);
+    return res.status(500).json({ error: "Database error" });
+  } finally {
+    client.release();
+  }
+});
 
 app.delete('/api/delete_driver/:id', async (req, res) => {
   const { id } = req.params;

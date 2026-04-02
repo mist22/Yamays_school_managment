@@ -1,5 +1,6 @@
 import { AlertCircle, Gavel, LoaderPinwheel, Search, Trash2 } from 'lucide-react';
 import React, { use, useEffect, useState, useCallback } from 'react'
+import BASE_URL from '../apiurls';
 
 const RegisterStudent = () => {
     const [searchTerm, setSearchTerm] = useState("")
