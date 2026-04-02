@@ -39,7 +39,7 @@ const Dashbaord = ({buses , students, message}) => {
 
   const onsubmit = async(data) => {
     try{
-      const response = await fetch(`${BASE_URL}/api/register_student`, {
+      const response = await fetch(`${BASE_URL}/register_student`, {
         method: "POST",
         headers : {"Content-Type" : "application/json"},
         body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id, class_grade:data.class_grade})

@@ -42,7 +42,7 @@ function Transport() {
   const fetchFleet = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/api/get_drivers`);
+      const response = await fetch(`${BASE_URL}/get_drivers`);
       if (!response.ok) throw new Error("Failed to fetch fleet data");
       const data = await response.json();
       setFleet(data.data || []);
