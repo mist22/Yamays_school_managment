@@ -9,7 +9,7 @@ export default defineConfig({
        '/api': {
         target: 'http://localhost:3000', // Your local Express server
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '') // Remove /api prefix before forwarding
+        //rewrite: (path) => path.replace(/^\/api/, '') // Remove /api prefix before forwarding
       }
     }
   }
