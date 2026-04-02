@@ -30,7 +30,7 @@ const Discipline = ({students, setStudents}) => {
 
    const onsubmit = async(data) => {
     try{
-      const response = await fetch(`${BASE_URL}/discipline_register`, {
+      const response = await fetch(`${BASE_URL}/api/discipline_register`, {
         method: "POST",
         headers : {"Content-Type" : "application/json"},
         body: JSON.stringify({id: student_id, name : data.name, reson : data.reson, severity : data.severity, date:data.date , action: data.action})
@@ -63,7 +63,7 @@ const Discipline = ({students, setStudents}) => {
   };
   useEffect(() => {
     async function fetchDiscpline(){
-        const response = await fetch(`${BASE_URL}/get_discipline`);
+        const response = await fetch(`${BASE_URL}/api/get_discipline`);
         const data = await response.json()
         setDiscipline(data.data)
     }

@@ -42,7 +42,7 @@ function Transport() {
   const fetchFleet = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/get_drivers`);
+      const response = await fetch(`${BASE_URL}/api/get_drivers`);
       if (!response.ok) throw new Error("Failed to fetch fleet data");
       const data = await response.json();
       setFleet(data.data || []);
@@ -86,7 +86,7 @@ function Transport() {
   // 4. DATABASE SUBMISSION (POST)
   const onsubmit = async (data) => {
     try {
-      const response = await fetch(`${BASE_URL}/register_driver`, {
+      const response = await fetch(`${BASE_URL}/api/register_driver`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -124,7 +124,7 @@ function Transport() {
 
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/delete_driver/${deleteConfirm.driverId}`, { 
+      const response = await fetch(`${BASE_URL}/api/delete_driver/${deleteConfirm.driverId}`, { 
         method: 'DELETE' 
       });
       

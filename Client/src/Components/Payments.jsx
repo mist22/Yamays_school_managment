@@ -39,7 +39,7 @@ function Payments() {
   const fetchPayments = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/get_payments`); 
+      const response = await fetch(`${BASE_URL}/api/get_payments`); 
       if (!response.ok) throw new Error("Failed to fetch payment data");
       const data = await response.json();
       setPayments(data.data || []);

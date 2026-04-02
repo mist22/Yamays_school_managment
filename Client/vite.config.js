@@ -5,11 +5,11 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(),  tailwindcss()],
   server: {
-    proxy: {
-       '/api': {
-        target: 'http://localhost:3000/api', // Your local Express server
+   proxy: {
+      '/api': {
+        target: 'http://localhost:3000/api', // Remove /api from here
         changeOrigin: true,
-        //rewrite: (path) => path.replace(/^\/api/, '') // Remove /api prefix before forwarding
+        rewrite: (path) => path.replace(/^\/api/, '') // This will now work
       }
     }
   }

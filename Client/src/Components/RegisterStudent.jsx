@@ -9,7 +9,7 @@ const RegisterStudent = () => {
     const [students, setStudents] = useState([])
 
      let getStudents = useCallback (async() => {
-          let retriveStudents = await fetch (`${BASE_URL}/get_students`)
+          let retriveStudents = await fetch (`${BASE_URL}/api/get_students`)
           const data = await retriveStudents.json()
           console.log(data)
           setStudents(data.data)

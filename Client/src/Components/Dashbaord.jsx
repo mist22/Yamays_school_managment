@@ -39,7 +39,7 @@ const Dashbaord = ({buses , students, message}) => {
 
   const onsubmit = async(data) => {
     try{
-      const response = await fetch(`${BASE_URL}/register_student`, {
+      const response = await fetch(`${BASE_URL}/api/register_student`, {
         method: "POST",
         headers : {"Content-Type" : "application/json"},
         body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id, class_grade:data.class_grade})
@@ -63,7 +63,7 @@ const Dashbaord = ({buses , students, message}) => {
 }
 
 async function Drivers(){
-  const response = await fetch(`${BASE_URL}/get_drivers`, {
+  const response = await fetch(`${BASE_URL}/api/get_drivers`, {
     method: "GET"
   })
   const data = await response.json()
@@ -71,14 +71,14 @@ async function Drivers(){
   return data?.data.length
 }
 async function Students(){
-  const response = await fetch(`${BASE_URL}/get_students`, {
+  const response = await fetch(`${BASE_URL}/api/get_students`, {
     method: "GET"
   })
   const data = await response.json()
   return data?.data.length
 }
 async function Incident(){
-  const response = await fetch(`${BASE_URL}/get_discipline`, {
+  const response = await fetch(`${BASE_URL}/api/get_discipline`, {
     method: "GET"
   })
   const data = await response.json()
@@ -130,7 +130,7 @@ const handleFileUpload = async(e) =>{
         jsonData.push(obj)
       }
     });
-      const res = await fetch(`${BASE_URL}/batch_students`, {
+      const res = await fetch(`${BASE_URL}/api/batch_students`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(jsonData),
@@ -166,7 +166,7 @@ const handleFileUpload = async(e) =>{
 
 useEffect(() => {
   async function fetchDiscpline(){
-      const response = await fetch(`${BASE_URL}/get_discipline`);
+      const response = await fetch(`${BASE_URL}/api/get_discipline`);
       const data = await response.json()
       setDiscipline(data.data)
   }
