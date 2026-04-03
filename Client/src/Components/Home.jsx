@@ -21,6 +21,7 @@ import Transport from './Transport';
 import { useForm } from 'react-hook-form';
 import Payments from './Payments';
 import BASE_URL from '../apiurls';
+import { useNavigate } from 'react-router-dom';
 
 
 
@@ -37,6 +38,7 @@ function Home() {
   const [drivers, setDrivers] = useState([])
   const {handleSubmit, register, reset} = useForm()
   const timeOut = useRef(null)
+  const navigate  = useNavigate()
 
   const onsubmit = async(data) => {
     try{
@@ -73,9 +75,7 @@ function Home() {
      if(message){
       setShow(true)
     }
-    
-
-    if(timeOut.current){
+      if(timeOut.current){
       clearTimeout(timeOut.current)
     }
     timeOut.current = setTimeout(() => {
@@ -87,6 +87,32 @@ function Home() {
       setMessage(null)
     }, 3000)
   }, [message])
+    
+  useEffect(() => {
+        const checkToken = async () => {
+          try {
+            const res = await fetch(`/api/check-token`, {
+              method: "GET",
+              credentials: "include", // important to send cookies
+            });
+    
+            const data = await res.json();
+    
+            if (res.ok && data.isAuthenticated) {
+             console.log("Manager Loged in succesfully")
+            } else {
+              navigate("/Login", {replace:true}); // token invalid, go to login
+            }
+          } catch (err) {
+            console.error(err);
+            navigate("/Login");
+          }
+        };
+    
+        checkToken();
+      }, []);
+
+
 
   // Modals
   const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);

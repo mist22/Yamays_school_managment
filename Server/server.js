@@ -2,13 +2,29 @@ import "dotenv/config"
 import express, { json } from "express"
 import pkg from "pg"
 import cors from "cors"
+import cookieParser from 'cookie-parser';
+import {authMiddleware} from './Routes/middleWare.js';
+import login from "./Routes/login.js"
 
 let app = express()
+
+if(!process.env.VITE_API_UR){
+  app.use(cors({
+  origin: "http://localhost:5173", // frontend URL
+  methods: ["POST", "GET", "DELETE", "PUT", "OPTIONS"],
+  credentials: true, // ✅ important to allow cookies
+  allowedHeaders: ["Content-Type", "Authorization"], // optional but safer
+}));
+
+}
+
+
+app.use(cookieParser());
+app.use(express.json());
+app.use("/api", login)
+
 const {Pool} = pkg
-app.use(cors({
-    origin: ["http://localhost:5173", 'https://yamays-school.pages.dev'],
-    methods: ["POST", "GET", "DELETE", "PUT", "OPTIONS"],
-}))
+
 
 app.use(express.json())
 
@@ -289,7 +305,12 @@ app.post("/api/batch_students", async (req, res) => {
     client.release();
   }
 });
-
+app.get('/check-token', authMiddleware, (req, res) => {
+  res.json({
+    isAuthenticated: true,
+    user: req.user // info from token
+  });
+});
 app.listen(3000, "0.0.0.0", () => {
     console.log("Server running on http://localhost:3000")
 })
