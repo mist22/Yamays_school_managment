@@ -5,12 +5,16 @@ dotenv.config();
 import jwt from 'jsonwebtoken';
 
 export const authMiddleware = (req, res, next) => {
-  const token = req.cookies?.token; // assuming the JWT is stored in a cookie named 'token'
+  const authHeader = req.headers.authorization;
+  console.log(authHeader)
 
-  if (!token) {
+  if (!authHeader) {
     return res.status(401).json({ message: "Not authenticated" });
   }
-
+  const token = authHeader.split(' ')[1]
+  if(!token){
+        return res.status(401).json({ message: "Token missing" });
+  }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // your secret key
     req.user = decoded; // attach user info to request

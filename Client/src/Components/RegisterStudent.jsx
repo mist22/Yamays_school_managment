@@ -7,9 +7,14 @@ const RegisterStudent = () => {
     const [selectedstudent, setSelectedStudent] = useState()
     const [openDeleteModel, setOpenDeleteModel] = useState(false)
     const [students, setStudents] = useState([])
+    const token = localStorage.getItem('token');
 
      let getStudents = useCallback (async() => {
-          let retriveStudents = await fetch (`${BASE_URL}/api/get_students`)
+          let retriveStudents = await fetch (`${BASE_URL}/api/get_students`, {
+            method: "GET",
+            headers : {"Content-Type" : "application/json", 'Authorization': `Bearer ${token}`},
+
+          })
           const data = await retriveStudents.json()
           console.log(data)
           setStudents(data.data)
@@ -29,7 +34,9 @@ const RegisterStudent = () => {
   const handleConfirmDelete = async () => {
     try {
       const response = await fetch(`${BASE_URL}/student_delete/${selectedstudent.id}`, { 
-        method: 'DELETE' 
+        method: 'DELETE',
+        headers : {"Content-Type" : "application/json", 'Authorization': `Bearer ${token}`},
+
       });
       
       if (!response.ok){

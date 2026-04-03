@@ -32,6 +32,8 @@ function Transport() {
   const [showRegistration, setShowRegistration] = useState(false);
   const [capacity, setCapacity] = useState([])
   const [allStudents, setAllStudents] = useState([])
+  const token = localStorage.getItem('token');
+
   
   // Custom Modal State
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, driverId: null, driverName: '' });
@@ -42,7 +44,11 @@ function Transport() {
   const fetchFleet = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`${BASE_URL}/api/get_drivers`);
+      const response = await fetch(`${BASE_URL}/api/get_drivers`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}`, },
+
+      });
       if (!response.ok) throw new Error("Failed to fetch fleet data");
       const data = await response.json();
       setFleet(data.data || []);

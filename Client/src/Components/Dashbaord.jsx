@@ -62,29 +62,51 @@ const Dashbaord = ({buses , students, message}) => {
   }
 }
 
-async function Drivers(){
+async function Drivers() {
+  const token = localStorage.getItem('token');
+
   const response = await fetch(`${BASE_URL}/api/get_drivers`, {
-    method: "GET"
-  })
-  const data = await response.json()
-  console.log(data?.data.length, "students")
-  return data?.data.length
-}
-async function Students(){
-  const response = await fetch(`${BASE_URL}/api/get_students`, {
-    method: "GET"
-  })
-  const data = await response.json()
-  return data?.data.length
-}
-async function Incident(){
-  const response = await fetch(`${BASE_URL}/api/get_discipline`, {
-    method: "GET"
-  })
-  const data = await response.json()
-  return data?.data.length
+    method: "GET",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json();
+  console.log(data?.data?.length, "drivers");
+  return data?.data?.length;
 }
 
+async function Students() {
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(`${BASE_URL}/api/get_students`, {
+    method: "GET",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json();
+  return data?.data?.length;
+}
+
+async function Incident() {
+  const token = localStorage.getItem('token');
+
+  const response = await fetch(`${BASE_URL}/api/get_discipline`, {
+    method: "GET",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  const data = await response.json();
+  return data?.data?.length;
+}
 useEffect(() => {
   const fetchValues = async() => {
     const students_value = await Students()
@@ -130,9 +152,11 @@ const handleFileUpload = async(e) =>{
         jsonData.push(obj)
       }
     });
+      const token = localStorage.getItem('token');
+
       const res = await fetch(`${BASE_URL}/api/batch_students`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}`, },
         body: JSON.stringify(jsonData),
       });
 
@@ -166,7 +190,15 @@ const handleFileUpload = async(e) =>{
 
 useEffect(() => {
   async function fetchDiscpline(){
-      const response = await fetch(`${BASE_URL}/api/get_discipline`);
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(`${BASE_URL}/api/get_discipline`, {
+        method: "GET",
+        headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    }
+      });
       const data = await response.json()
       setDiscipline(data.data)
   }

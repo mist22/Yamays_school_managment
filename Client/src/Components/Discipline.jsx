@@ -25,14 +25,15 @@ const Discipline = ({students, setStudents}) => {
     const {handleSubmit, register, reset} = useForm()
     const [student_id, setStudent_id] = useState(0)
     const [discipline, setDiscipline] = useState([])
-    
+    const token = localStorage.getItem('token');
+
 
 
    const onsubmit = async(data) => {
     try{
       const response = await fetch(`${BASE_URL}/api/discipline_register`, {
         method: "POST",
-        headers : {"Content-Type" : "application/json"},
+        headers : {"Content-Type" : "application/json", 'Authorization': `Bearer ${token}`},
         body: JSON.stringify({id: student_id, name : data.name, reson : data.reson, severity : data.severity, date:data.date , action: data.action})
       })
 
@@ -63,7 +64,11 @@ const Discipline = ({students, setStudents}) => {
   };
   useEffect(() => {
     async function fetchDiscpline(){
-        const response = await fetch(`${BASE_URL}/api/get_discipline`);
+
+        const response = await fetch(`${BASE_URL}/api/get_discipline`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}`, },
+        });
         const data = await response.json()
         setDiscipline(data.data)
     }

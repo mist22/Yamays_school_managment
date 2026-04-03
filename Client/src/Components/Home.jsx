@@ -39,12 +39,14 @@ function Home() {
   const {handleSubmit, register, reset} = useForm()
   const timeOut = useRef(null)
   const navigate  = useNavigate()
+  const token = localStorage.getItem('token');
+
 
   const onsubmit = async(data) => {
     try{
       const response = await fetch(`${BASE_URL}/api/register_student`, {
         method: "POST",
-        headers : {"Content-Type" : "application/json"},
+        headers : {"Content-Type" : "application/json", 'Authorization': `Bearer ${token}`},
         body: JSON.stringify({name : data.studentname, grade : data.grade, bus_id : data.bus_id, class_grade:data.class_grade})
       })
 
@@ -89,11 +91,14 @@ function Home() {
   }, [message])
     
   useEffect(() => {
+      const token = localStorage.getItem('token');
+
         const checkToken = async () => {
           try {
             const res = await fetch(`/api/check-token`, {
               method: "GET",
-              credentials: "include", // important to send cookies
+              headers : {"Content-Type" : "application/json", 'Authorization': `Bearer ${token}`},
+
             });
     
             const data = await res.json();
@@ -101,6 +106,7 @@ function Home() {
             if (res.ok && data.isAuthenticated) {
              console.log("Manager Loged in succesfully")
             } else {
+              console.log(data)
               navigate("/Login", {replace:true}); // token invalid, go to login
             }
           } catch (err) {

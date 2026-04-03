@@ -6,17 +6,22 @@ import { LoaderCircleIcon } from "lucide-react";
 const AuthGate = () => {
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const navigate = useNavigate();
+    const token = localStorage.getItem('token');
+    console.log(token)
+
+    const navigate = useNavigate();
 
   useEffect(() => {
     const checkToken = async () => {
       try {
         const res = await fetch(`/api/check-token`, {
           method: "GET",
-          credentials: "include", // important to send cookies
+          headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}`, },
+
         });
 
         const data = await res.json();
+        console.log(data)
 
         if (res.ok && data.isAuthenticated) {
           setIsAuthenticated(true);

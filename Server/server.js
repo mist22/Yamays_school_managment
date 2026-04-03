@@ -8,7 +8,7 @@ import login from "./Routes/login.js"
 
 let app = express()
 
-if(!process.env.VITE_API_UR){
+if(process.env.VITE_API_URL){
   app.use(cors({
   origin: "http://localhost:5173", // frontend URL
   methods: ["POST", "GET", "DELETE", "PUT", "OPTIONS"],

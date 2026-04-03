@@ -23,7 +23,7 @@ const Login = () => {
   const [authError, setAuthError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate()
-  
+
   const { 
     register, 
     handleSubmit, 
@@ -47,15 +47,16 @@ const handleLogin = async (data) => {
       }),
     });
 
-    const resData = await response.json();
+    const data2 = await response.json();
 
     if (response.ok) {
-      console.log(resData)
-      navigate("/Home", {replace: true})
+      console.log(data2)
+      localStorage.setItem('token', data2.token); // 👈 save JWT in localStorage
+      navigate("/Home")
       // Login successful
     } else {
       // Login failed
-      setAuthError(resData.message || "Login failed. Please try again.");
+      setAuthError(data2.message || "Login failed. Please try again.");
     }
   } catch (err) {
     console.error(err);
