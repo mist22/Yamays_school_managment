@@ -13,26 +13,29 @@ const AuthGate = () => {
 
   useEffect(() => {
     const checkToken = async () => {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/Login");
+        return;
+      }
+
       try {
         const res = await fetch(`/api/check-token`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json", 'Authorization': `Bearer ${token}`, },
-
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
         const data = await res.json();
-        console.log(data)
 
         if (res.ok && data.isAuthenticated) {
-          setIsAuthenticated(true);
-          navigate("/Home"); // user is logged in, redirect to /Home
+          navigate("/Home");
         } else {
-          setIsAuthenticated(false);
-          navigate("/Login"); // token invalid, go to login
+          localStorage.removeItem("token");
+          navigate("/Login");
         }
       } catch (err) {
-        console.error(err);
-        setIsAuthenticated(false);
         navigate("/Login");
       } finally {
         setLoading(false);
@@ -52,7 +55,7 @@ const AuthGate = () => {
   }
 
   // if not authenticated, show login form
-  return !isAuthenticated ? <Login onLoginSuccess={() => navigate("/Home")} /> : null;
+  return  null;
 };
 
 export default AuthGate;

@@ -22,9 +22,7 @@ import { useForm } from 'react-hook-form';
 import Payments from './Payments';
 import BASE_URL from '../apiurls';
 import { useNavigate } from 'react-router-dom';
-
-
-
+import AuthGate from "./AuthGate"
 
 function Home() {
   console.log(BASE_URL)
@@ -38,10 +36,14 @@ function Home() {
   const [drivers, setDrivers] = useState([])
   const {handleSubmit, register, reset} = useForm()
   const timeOut = useRef(null)
-  const navigate  = useNavigate()
+  const navigate = useNavigate()
   const token = localStorage.getItem('token');
 
-
+  useEffect(() => {
+    if(!token){
+      navigate("/login")
+    }
+  },[])
   const onsubmit = async(data) => {
     try{
       const response = await fetch(`${BASE_URL}/api/register_student`, {
@@ -73,6 +75,9 @@ function Home() {
   }
 }
 
+
+
+
   useEffect(() => {
      if(message){
       setShow(true)
@@ -90,33 +95,7 @@ function Home() {
     }, 3000)
   }, [message])
     
-  useEffect(() => {
-      const token = localStorage.getItem('token');
 
-        const checkToken = async () => {
-          try {
-            const res = await fetch(`/api/check-token`, {
-              method: "GET",
-              headers : {"Content-Type" : "application/json", 'Authorization': `Bearer ${token}`},
-
-            });
-    
-            const data = await res.json();
-    
-            if (res.ok && data.isAuthenticated) {
-             console.log("Manager Loged in succesfully")
-            } else {
-              console.log(data)
-              navigate("/Login", {replace:true}); // token invalid, go to login
-            }
-          } catch (err) {
-            console.error(err);
-            navigate("/Login");
-          }
-        };
-    
-        checkToken();
-      }, []);
 
 
 
