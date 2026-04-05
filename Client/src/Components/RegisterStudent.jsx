@@ -7,6 +7,7 @@ const RegisterStudent = () => {
     const [selectedstudent, setSelectedStudent] = useState()
     const [openDeleteModel, setOpenDeleteModel] = useState(false)
     const [students, setStudents] = useState([])
+    const [allstudents, setAllStudents] = useState([])
     const token = localStorage.getItem('token');
 
      let getStudents = useCallback (async() => {
@@ -18,6 +19,7 @@ const RegisterStudent = () => {
           const data = await retriveStudents.json()
           console.log(data)
           setStudents(data.data)
+          setAllStudents(data.data)
         }, [])
       useEffect(() => {
        
@@ -25,15 +27,19 @@ const RegisterStudent = () => {
       }, [])
 
     useEffect(() => {
-      const filter = students.filter(s => 
+      if(searchTerm.length <= 0){
+        setStudents(allstudents)
+      }
+      const filter = allstudents.filter(s => 
         s.name.includes(searchTerm.toLowerCase())
       )
       setStudents(filter)
-
+      console.log(students)
     },[searchTerm])
+    
   const handleConfirmDelete = async () => {
     try {
-      const response = await fetch(`${BASE_URL}/student_delete/${selectedstudent.id}`, { 
+      const response = await fetch(`${BASE_URL}/api/student_delete/${selectedstudent.id}`, { 
         method: 'DELETE',
         headers : {"Content-Type" : "application/json", 'Authorization': `Bearer ${token}`},
 
@@ -143,9 +149,12 @@ const RegisterStudent = () => {
                    </table>
                  </div>
                 :
-                <div className='flex justify-center items-center p-35'>
+                students?.length <= 0 && (
+                  <div className='flex justify-center items-center p-35'>
                   <LoaderPinwheel size={100} className='text-blue-200 animate-spin'/>
                 </div>
+                )
+                
                }
               </div>
             </div>

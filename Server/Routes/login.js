@@ -17,15 +17,15 @@ const pool = new Pool({
 
 // LOGIN ROUTE
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+  const { name, password } = req.body;
 
-  if (!email || !password)
-    return res.status(400).json({ message: "Email and password required" });
+  if (!name || !password)
+    return res.status(400).json({ message: "username and password required" });
 
   try {
     const userResult = await pool.query(
       'SELECT * FROM manager WHERE name = $1',
-      [email]
+      [name]
     );
 
     const user = userResult.rows[0];
@@ -38,7 +38,7 @@ router.post('/login', async (req, res) => {
 
     // create JWT
     const token = jwt.sign(
-      { id: user.id, role: user.role },
+      { id: user.id, role: user.role},
       process.env.JWT_SECRET,
       { expiresIn: '1h' } // 1 hour expiry
     );
@@ -47,7 +47,7 @@ router.post('/login', async (req, res) => {
     res.json({
       message: "Logged in successfully",
       token, // 👈 send token directly
-      user: { id: user.id, role: user.role }
+      user: { id: user.id, role: user.role, name: user.name }
     });
   } catch (err) {
     console.error(err);

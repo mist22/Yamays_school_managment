@@ -42,7 +42,7 @@ const handleLogin = async (data) => {
       },
       credentials: "include", // important to send and receive httpOnly cookie
       body: JSON.stringify({
-        email: data.username, // or data.email if you use email
+        name: data.username, // or data.email if you use email
         password: data.password,
       }),
     });
@@ -50,8 +50,9 @@ const handleLogin = async (data) => {
     const data2 = await response.json();
 
     if (response.ok) {
-      console.log(data2)
+      //console.log(data2.user.name)
       localStorage.setItem('token', data2.token); // 👈 save JWT in localStorage
+      localStorage.setItem('name', data2.user.name); // 👈 save JWT in localStorage
       navigate("/Home")
       // Login successful
     } else {

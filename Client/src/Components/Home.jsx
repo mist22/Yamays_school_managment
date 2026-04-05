@@ -38,6 +38,7 @@ function Home() {
   const timeOut = useRef(null)
   const navigate = useNavigate()
   const token = localStorage.getItem('token');
+  const ManagerName = localStorage.getItem('name');
 
   useEffect(() => {
     if(!token){
@@ -160,13 +161,13 @@ let getStudents = useCallback (async() => {
       )}
       
       {/* Desktop Sidebar */}
-      <aside className="w-72 bg-slate-900 text-white flex-shrink-0 flex flex-col hidden lg:flex no-print">
+      <aside className="w-72 bg-slate-900 text-white shrink-0 flex flex-col hidden lg:flex no-print overflow-y-auto">
         <div className="p-8 flex items-center gap-3">
           <div className="bg-blue-600 p-2.5 rounded-xl shadow-lg shadow-blue-500/20">
             <GraduationCap size={28} />
           </div>
           <div>
-            <span className="font-black text-xl tracking-tighter block leading-none">EduPortal</span>
+            <span className="font-black text-xl tracking-tighter block leading-none">Yamayas</span>
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 block">Management v2.5</span>
           </div>
         </div>
@@ -189,7 +190,7 @@ let getStudents = useCallback (async() => {
              <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center font-black text-xs">A</div>
                 <div className="min-w-0">
-                   <p className="text-xs font-black truncate">Admin User</p>
+                   <p className="text-xs font-black truncate">{ManagerName}</p>
                    <p className="text-[9px] font-bold text-slate-500 uppercase">Live System</p>
                 </div>
              </div>
@@ -199,7 +200,7 @@ let getStudents = useCallback (async() => {
 
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden no-print overflow-x-auto">
+        <div className="fixed inset-0 z-50 lg:hidden no-print overflow-x-auto overflow-y-auto">
           <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
           <aside className="absolute inset-y-0 left-0 w-72 bg-slate-900 text-white flex flex-col shadow-2xl animate-in slide-in-from-left duration-300">
             <div className="p-6 flex items-center justify-between">
